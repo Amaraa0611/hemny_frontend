@@ -1,0 +1,102 @@
+    // components/Hero.jsx
+
+    const Hero = () => {
+    return (
+        <section className="relative overflow-hidden bg-[#5856d6] min-h-[600px]">
+        <div className="absolute inset-0">
+            <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+            <div className="absolute right-10 top-1/2 -translate-y-1/2 w-72 h-72 hidden lg:block">
+            <div className="relative w-full h-full">
+                <div className="absolute inset-0 animate-spin-slow">
+                <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <circle 
+                    cx="50" cy="50" r="45" 
+                    fill="none" 
+                    stroke="rgba(255,255,255,0.1)" 
+                    strokeWidth="2"
+                    />
+                    <circle 
+                    cx="50" cy="50" r="45" 
+                    fill="none" 
+                    stroke="white" 
+                    strokeWidth="2"
+                    strokeDasharray="283"
+                    strokeDashoffset="100"
+                    className="transform origin-center rotate-180"
+                    />
+                </svg>
+                </div>
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <div className="relative w-20 h-20">
+                    {[0, 1, 2, 3].map((index) => (
+                    <div 
+                        key={index}
+                        className="absolute w-full h-full rounded-full border-2 border-white/30 bg-white/10 backdrop-blur-sm"
+                        style={{
+                        animation: `coinFloat 2s ease-in-out ${index * 0.2}s infinite`,
+                        top: `${index * -4}px`
+                        }}
+                    >
+                        <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-xl">
+                        ₮
+                        </div>
+                    </div>
+                    ))}
+                </div>
+                </div>
+                <div className="absolute inset-0 animate-pulse">
+                <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <path 
+                    d="M20,80 Q50,20 80,80" 
+                    fill="none" 
+                    stroke="rgba(255,255,255,0.5)" 
+                    strokeWidth="2"
+                    className="animate-draw"
+                    />
+                </svg>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div className="container mx-auto px-4 py-20 relative">
+            <div className="max-w-2xl mx-auto lg:mx-0">
+            <div className="text-center lg:text-left space-y-8">
+                <div className="inline-block px-6 py-2.5 bg-white/10 rounded-full backdrop-blur-sm">
+                <span className="text-sm font-medium text-white">
+                    Start Saving Today with Hemny
+                </span>
+                </div>
+                <h2 className="text-4xl sm:text-5xl font-bold text-white leading-tight">
+                Watch Your Savings 
+                <br className="hidden sm:block" />
+                <span className="text-white/90">Grow Every Day</span>
+                </h2>
+                <p className="text-xl text-white/80 leading-relaxed">
+                Turn every purchase into an investment in your future. Get 
+                <span className="font-semibold text-white"> instant cashback</span> and 
+                <span className="font-semibold text-white"> exclusive deals</span> that help your money grow.
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-8">
+                <div className="flex items-center px-5 py-2.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-shadow">
+                    <svg className="w-5 h-5 mr-2 text-[#5856d6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span className="font-medium text-gray-800">Instant Rewards</span>
+                </div>
+                <div className="flex items-center px-5 py-2.5 bg-white/95 backdrop-blur-sm rounded-full shadow-lg hover:shadow-xl transition-shadow">
+                    <svg className="w-5 h-5 mr-2 text-[#5856d6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2" />
+                    </svg>
+                    <span className="font-medium text-gray-800">Smart Savings</span>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
+        </section>
+    );
+    };
+
+    export default Hero;
+    
