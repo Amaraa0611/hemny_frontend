@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { CashbackMerchant } from '../types/cashback';
 
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:5001/api/',
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
