@@ -68,14 +68,14 @@
                 </span>
                 </div>
                 <h2 className="text-4xl sm:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
-                Та 
+                Та дахиж хэзээ ч
                 <br className="hidden sm:block" />
-                <span className="bg-gradient-to-r from-[#5856d6] to-blue-500 text-transparent bg-clip-text">Хямдрал, Хөнгөлөлтийг дахиж хэзээ ч бүү алд!</span>
+                <span className="bg-gradient-to-r from-[#5856d6] to-blue-500 text-transparent bg-clip-text">хямдрал, хөнгөлөлтийн мэдээллийг алдахгүй!</span>
                 </h2>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                 
-                <span className="font-semibold text-gray-900">Таны дуртай байгууллагуудын зарласан  </span> 
-                <span className="font-semibold text-gray-900">хямдрал, лоялати, cashback, хөнглөлтийн </span>  мэдээллийг бүгдийг нэг доороос.
+                Таны дуртай байгууллагуудын зарласан
+                <span className="font-semibold text-gray-900"> хямдрал, лояалти, </span> 
+                <span className="font-semibold text-gray-900"> cashback, хөнглөлтийн </span>  мэдээллийг бүгдийг нэг доороос.
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-8">
                 <div className="flex items-center px-5 py-2.5 bg-[#5856d6] text-white rounded-full shadow-lg hover:shadow-xl transition-shadow">
