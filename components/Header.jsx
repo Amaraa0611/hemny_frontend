@@ -9,7 +9,7 @@ const Header = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/categories');
+        const response = await fetch(process.env.NEXT_PUBLIC_BACKEND_URL);
         const data = await response.json();
         setCategories(data);
       } catch (error) {
