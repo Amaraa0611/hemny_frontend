@@ -26,7 +26,7 @@ const Cashback = () => {
               <div className="h-4 w-96 bg-gray-200 rounded"></div>
             </div>
           </div>
-          <div className="grid grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
             {[...Array(12)].map((_, index) => (
               <div key={index} className="animate-pulse">
                 <div className="bg-gray-200 rounded-lg h-[100px] mb-3"></div>
@@ -97,8 +97,8 @@ const Cashback = () => {
             )}
           </div>
 
-          {/* Cards Grid with exact 22px gap */}
-          <div className="grid grid-cols-6 gap-[22px]">
+          {/* Updated grid with responsive columns */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-[22px]">
             {stores?.map((store) => (
               <CashbackCard
                 key={store.offer_id}
