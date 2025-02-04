@@ -73,10 +73,10 @@ const Cashback = () => {
           <div className="flex justify-between items-center mb-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Буцаан олголтын тухай бүх мэдээлэл
+                Cashback
               </h2>
               <p className="text-gray-600">
-                Limited time offers with increased cash back rates
+                Буцаан олголт зарласан байгууллаууд
               </p>
             </div>
             {hasMoreStores && (

@@ -44,7 +44,7 @@ const CashbackCard = (props) => {
         </div>
 
         <div className="mt-3 text-center">
-          <span style={{ color: colors.success }} className="text-[15px] leading-[18px] font-medium">
+          <span className="text-[15px] leading-[18px] font-semibold bg-gradient-to-r from-violet-600 to-indigo-600 text-transparent bg-clip-text">
             {props.CashbackOffer?.cashback_rate}% Cash Back
           </span>
         </div>

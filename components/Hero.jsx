@@ -64,31 +64,31 @@
             <div className="text-center lg:text-left space-y-8">
                 <div className="inline-block px-6 py-2.5 bg-[#5856d6]/10 rounded-full">
                 <span className="text-sm font-medium text-[#5856d6]">
-                    Start Saving Today with Hemny
+                    Hemny-тэй хамт хэмнэе.
                 </span>
                 </div>
                 <h2 className="text-4xl sm:text-6xl font-bold text-gray-900 leading-tight tracking-tight">
-                Watch Your Savings 
+                Та 
                 <br className="hidden sm:block" />
-                <span className="bg-gradient-to-r from-[#5856d6] to-blue-500 text-transparent bg-clip-text">Grow Every Day</span>
+                <span className="bg-gradient-to-r from-[#5856d6] to-blue-500 text-transparent bg-clip-text">Хямдрал, Хөнгөлөлтийг дахиж хэзээ ч бүү алд!</span>
                 </h2>
                 <p className="text-xl text-gray-600 leading-relaxed">
-                Turn every purchase into an investment in your future. Get 
-                <span className="font-semibold text-gray-900"> instant cashback</span> and 
-                <span className="font-semibold text-gray-900"> exclusive deals</span> that help your money grow.
+                 
+                <span className="font-semibold text-gray-900">Таны дуртай байгууллагуудын зарласан  </span> 
+                <span className="font-semibold text-gray-900">хямдрал, лоялати, cashback, хөнглөлтийн </span>  мэдээллийг бүгдийг нэг доороос.
                 </p>
                 <div className="flex flex-wrap gap-4 justify-center lg:justify-start pt-8">
                 <div className="flex items-center px-5 py-2.5 bg-[#5856d6] text-white rounded-full shadow-lg hover:shadow-xl transition-shadow">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    <span className="font-medium">Instant Rewards</span>
+                    <span className="font-medium">Зөв мэдээлэл</span>
                 </div>
                 <div className="flex items-center px-5 py-2.5 border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-shadow">
                     <svg className="w-5 h-5 mr-2 text-[#5856d6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2" />
                     </svg>
-                    <span className="font-medium text-gray-800">Smart Savings</span>
+                    <span className="font-medium text-gray-800">Ухаалаг худалан авалт</span>
                 </div>
                 </div>
             </div>
