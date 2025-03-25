@@ -1,50 +1,40 @@
 import axios from 'axios';
-import { CashbackMerchant } from '../types/cashback';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+// Import APIs
+import { cashbackApi } from './cashbackApi';
+import { discountApi } from './discountApi';
+import { loyaltyApi } from './loyaltyApi';
 
-const axiosInstance = axios.create({
+
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5001/api';
+
+// Immediate logging when the file is loaded
+console.log('API Configuration:');
+console.log({
+  NODE_ENV: process.env.NODE_ENV,
+  API_URL,
+  NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  timestamp: new Date().toISOString()
+});
+
+export const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   },
-  validateStatus: (status) => status < 500,
+  // More specific status validation
+  validateStatus: (status) => status >= 200 && status < 300,
 });
 
-export const cashbackApi = {
-  getStores: async (): Promise<CashbackMerchant[]> => {
-    try {
-      const response = await axiosInstance.get('offers/cashback/available');
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.code === 'ECONNREFUSED') {
-          console.error('Unable to connect to the server. Is it running?');
-        } else if (error.response) {
-          console.error('Server responded with:', error.response.status, error.response.data);
-        } else if (error.request) {
-          console.error('No response received:', error.message);
-        }
-      }
-      console.error('Error fetching cashback stores:', error);
-      throw error;
-    }
-  },
-
-  // Add other API methods here
-  getStoreById: async (id: string): Promise<CashbackMerchant> => {
-    try {
-      const { data } = await axiosInstance.get(`cashback/stores/${id}`);
-      return data;
-    } catch (error) {
-      console.error(`Error fetching cashback store with id ${id}:`, error);
-      throw error;
-    }
-  },
+// Export all APIs
+export {
+  cashbackApi,
+  discountApi,
+  loyaltyApi
 };
 
-// You can add other API services here
+// Auth API remains in api.ts since it's a core functionality
 export const authApi = {
   login: async (credentials: { email: string; password: string }) => {
     const { data } = await axiosInstance.post('/auth/login', credentials);

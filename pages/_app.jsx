@@ -16,11 +16,17 @@ function MyApp({ Component, pageProps }) {
   }));
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {/* <MainLayout> */}
-        <Component {...pageProps} />
-      {/* </MainLayout> */}
-    </QueryClientProvider>
+    <>
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+      </Head>
+      <QueryClientProvider client={queryClient}>
+        {/* <MainLayout> */}
+          <Component {...pageProps} />
+        {/* </MainLayout> */}
+      </QueryClientProvider>
+    </>
   );
 }
 

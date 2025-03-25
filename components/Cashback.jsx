@@ -76,7 +76,7 @@ const Cashback = () => {
                 Cashback
               </h2>
               <p className="text-gray-600">
-                Буцаан олголт зарласан байгууллаууд
+                Буцаан олголт зарласан байгууллагууд
               </p>
             </div>
             {hasMoreStores && (

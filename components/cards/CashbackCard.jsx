@@ -6,20 +6,31 @@ const CashbackCard = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Debug logs
-  console.log('Full props:', props);
-  console.log('Organization:', props.Organization);
-  console.log('Brand colors:', props.Organization?.brand_colors);
-  console.log('Logo URL:', props.Organization?.logo_url);
-  console.log('Cashback rate:', props.CashbackOffer?.cashback_rate);
+  // console.log('Full props:', props);
+  // console.log('Organization:', props.Organization);
+  // console.log('Brand colors:', props.Organization?.brand_colors);
+  // console.log('Logo URL:', props.Organization?.logo_url);
+  // console.log('Cashback rate:', props.CashbackOffer?.cashback_rate);
 
-  // Debug log
-  console.log('Organization data:', props.Organization);
-  console.log('Logo URL:', props.Organization?.logo_url);
+  // // Debug log
+  // console.log('Organization data:', props.Organization);
+  // console.log('Logo URL:', props.Organization?.logo_url);
+  console.log('CashbackOffer:', props.CashbackOffer);
+  console.log('CashbackOffer picture_url:', props.CashbackOffer?.picture_url);
+
+  // Helper function to get the appropriate logo
+  const getLogo = () => {
+    if (!props.Organization?.Logos || props.Organization.Logos.length === 0) {
+      return '';
+    }
+    // Get the first logo (assuming it's the primary one)
+    return props.Organization.Logos[0].url;
+  };
 
   // Helper function to fix image path
   const getImagePath = (path) => {
     if (!path) return '';
-    return path.replace('public/', '/');
+    return path.startsWith('/') ? path : `/${path}`;
   };
 
   return (
@@ -36,7 +47,7 @@ const CashbackCard = (props) => {
           }}
         >
           <img 
-            src={getImagePath(props.Organization?.logo_url)}
+            src={getImagePath(getLogo())}
             alt={props.Organization?.org_name}
             className="max-h-12 w-auto object-contain"
             loading="lazy"

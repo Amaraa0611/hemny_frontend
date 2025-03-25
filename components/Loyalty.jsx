@@ -1,20 +1,201 @@
 // components/Loyalty.jsx
 
+import React, { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { colors } from '../utils/colors';
+import LoyaltyCard from './cards/LoyaltyCard';
+import { loyaltyApi } from '../services/api';
+
 const Loyalty = () => {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  
+  const { 
+    data: stores, 
+    isLoading, 
+    error 
+  } = useQuery({
+    queryKey: ['loyalty-stores'],
+    queryFn: () => loyaltyApi.getStores(),
+    retry: 1,
+    onError: (error) => {
+      console.error('Query error:', error);
+    }
+  });
+
+  // Add debug logging
+  console.log('Loyalty stores data:', stores);
+
+  // Ensure stores is an array
+  const safeStores = Array.isArray(stores) ? stores : [];
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => {
+      if (prev < (stores?.length ?? 0) - 4) {
+        return prev + 1;
+      }
+      return 0;
+    });
+  };
+
+  const prevSlide = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide(prev => prev - 1);
+    }
+  };
+
+  useEffect(() => {
+    let intervalId;
+    
+    if (!isHovered && stores?.length > 4) {
+      intervalId = setInterval(() => {
+        nextSlide();
+      }, 5000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isHovered, stores]);
+
+  // Show loading state
+  if (isLoading) {
     return (
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto text-center">
-          <h3 className="text-3xl font-bold mb-6">Loyalty Programs</h3>
-          <p className="text-lg mb-8">Get rewarded with loyalty points from our partners.</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gray-100 p-6 rounded-lg">Loyalty Program 1</div>
-            <div className="bg-gray-100 p-6 rounded-lg">Loyalty Program 2</div>
-            <div className="bg-gray-100 p-6 rounded-lg">Loyalty Program 3</div>
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <div className="animate-pulse">
+              <div className="h-8 w-64 bg-gray-200 rounded mb-2"></div>
+              <div className="h-4 w-96 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+          <div className="flex gap-8">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="w-1/4 animate-pulse">
+                <div className="bg-gray-200 rounded-xl h-48 mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
+                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
     );
-  };
-  
-  export default Loyalty;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center text-red-600">
+            Failed to load loyalty stores. Please try again later.
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const canGoNext = currentSlide < (stores?.length ?? 0) - 4;
+  const canGoPrev = currentSlide > 0;
+
+  return (
+    <section className="py-12 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Loyalty Program
+            </h2>
+            <p className="text-gray-600">
+              Loyalty урамшуулал зарласан байгууллагууд
+            </p>
+          </div>
+          {stores?.length > 4 && (
+            <a 
+              href="/loyalty" 
+              className="inline-flex items-center text-primary hover:text-primary/80 font-medium"
+            >
+              See All
+              <svg 
+                className="ml-1 w-4 h-4" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </a>
+          )}
+        </div>
+
+        <div 
+          className="relative max-w-[1600px] mx-auto"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div className="overflow-hidden relative px-4">
+            <div 
+              className="flex transition-transform duration-500 ease-out"
+              style={{ transform: `translateX(-${currentSlide * 25}%)` }}
+            >
+              {safeStores.map((store) => (
+                <LoyaltyCard
+                  key={store.offer_id}
+                  image={store.picture_url}
+                  title={store.offer_title}
+                  description={store.offer_description}
+                  link={`/loyalty/${store.offer_id}`}
+                  organization={store.Organization}
+                  loyaltyDetails={store.LoyaltyOffer}
+                  startDate={store.start_date}
+                  endDate={store.end_date}
+                  source_link={store.source_link}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Navigation Buttons */}
+          {canGoPrev && (
+            <button 
+              onClick={prevSlide}
+              className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors z-10"
+              aria-label="Previous slide"
+            >
+              <svg 
+                className="w-6 h-6" 
+                fill="none" 
+                stroke="#004097" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          {canGoNext && (
+            <button 
+              onClick={nextSlide}
+              className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors z-10"
+              aria-label="Next slide"
+            >
+              <svg 
+                className="w-6 h-6" 
+                fill="none" 
+                stroke="#004097" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Loyalty;
   
