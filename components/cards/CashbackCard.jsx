@@ -18,19 +18,23 @@ const CashbackCard = (props) => {
   console.log('CashbackOffer:', props.CashbackOffer);
   console.log('CashbackOffer picture_url:', props.CashbackOffer?.picture_url);
 
-  // Helper function to get the appropriate logo
+  // Helper function to get the appropriate logo and convert to proper display path
   const getLogo = () => {
     if (!props.Organization?.Logos || props.Organization.Logos.length === 0) {
-      return '';
+      return '/images/default-logo.png';
     }
-    // Get the first logo (assuming it's the primary one)
-    return props.Organization.Logos[0].url;
-  };
+    
+    const logoUrl = props.Organization.Logos[0].url;
+    console.log('Original logo URL:', logoUrl);
 
-  // Helper function to fix image path
-  const getImagePath = (path) => {
-    if (!path) return '';
-    return path.startsWith('/') ? path : `/${path}`;
+    // Extract everything after 'images/' from the absolute path
+    if (logoUrl.includes('/images/')) {
+      const pathAfterImages = logoUrl.split('/images/').pop();
+      return `/images/${pathAfterImages}`;
+    }
+    
+    // If no images/ in path, return default
+    return '/images/default-logo.png';
   };
 
   return (
@@ -47,10 +51,14 @@ const CashbackCard = (props) => {
           }}
         >
           <img 
-            src={getImagePath(getLogo())}
+            src={getLogo()}
             alt={props.Organization?.org_name}
             className="max-h-12 w-auto object-contain"
             loading="lazy"
+            onError={(e) => {
+              console.error(`Failed to load logo: ${getLogo()}`);
+              e.target.src = '/images/default-logo.png';
+            }}
           />
         </div>
 

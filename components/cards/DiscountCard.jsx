@@ -4,19 +4,23 @@ import DiscountDetailsModal from '../modals/DiscountDetailsModal';
 const DiscountCard = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Helper function to get the appropriate logo
+  // Helper function to get the appropriate logo and convert to proper display path
   const getLogo = () => {
     if (!props.Organization?.Logos || props.Organization.Logos.length === 0) {
       return '';
     }
-    // Get the first logo (assuming it's the primary one)
-    return props.Organization.Logos[0].url;
-  };
+    
+    const logoUrl = props.Organization.Logos[0].url;
+    console.log('Original logo URL:', logoUrl);
 
-  // Helper function to fix image path
-  const getImagePath = (path) => {
-    if (!path) return '';
-    return path.startsWith('/') ? path : `/${path}`;
+    // Extract everything after 'images/' from the absolute path
+    if (logoUrl.includes('/images/')) {
+      const pathAfterImages = logoUrl.split('/images/').pop();
+      return `/images/${pathAfterImages}`;
+    }
+    
+    // If no images/ in path, return default
+    return '/images/default-logo.png';
   };
 
   // Format date to readable string
@@ -60,10 +64,14 @@ const DiscountCard = (props) => {
       >
         <div className="w-24 h-24 flex items-center justify-center p-2">
           <img 
-            src={getImagePath(getLogo())}
+            src={getLogo()}
             alt={props.Organization?.org_name}
             className="max-w-full max-h-full w-auto h-auto object-contain"
             loading="lazy"
+            onError={(e) => {
+              console.error(`Failed to load logo: ${getLogo()}`);
+              e.target.src = '/images/default-logo.png';
+            }}
           />
         </div>
         <div className="flex items-center gap-3 p-3 flex-1">

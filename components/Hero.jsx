@@ -1,4 +1,5 @@
     // components/Hero.jsx
+    import React from 'react';
 
     const Hero = () => {
     return (

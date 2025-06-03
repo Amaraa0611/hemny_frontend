@@ -1,1 +1,8 @@
-{"/_app":"pages/_app.js","/_error":"pages/_error.js","/api/cashback/stores":"pages/api/cashback/stores.js","/":"pages/index.html","/search":"pages/search.html","/_document":"pages/_document.js","/404":"pages/404.html"}
+{
+  "/_app": "pages/_app.js",
+  "/_error": "pages/_error.js",
+  "/_document": "pages/_document.js",
+  "/admin/offers": "pages/admin/offers.js",
+  "/": "pages/index.js",
+  "/admin/organizations": "pages/admin/organizations.js"
+}

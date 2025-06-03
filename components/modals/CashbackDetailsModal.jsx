@@ -23,10 +23,19 @@ const CashbackDetailsModal = ({
 
   const getImagePath = (path) => {
     if (!path) return '';
-    if (path.startsWith('public/')) {
-      return path.replace('public/', '/');
+    
+    // If it's an absolute path containing 'public', extract everything after it
+    if (path.includes('/public/')) {
+      return path.split('/public/').pop();
     }
-    return path;
+    
+    // If it's already a relative path starting with '/', use as is
+    if (path.startsWith('/')) {
+      return path;
+    }
+    
+    // For other cases, assume it's relative to /images/
+    return `/images/${path}`;
   };
 
   const handleOverlayClick = (e) => {
@@ -79,7 +88,7 @@ const CashbackDetailsModal = ({
                   style={{ maxHeight: '300px', minHeight: '150px' }}
                   onError={(e) => {
                     console.error('Image failed to load:', e.target.src);
-                    e.target.src = '/fallback-image.jpg';
+                    e.target.src = '/images/default-logo.png';
                   }}
                 />
               </div>

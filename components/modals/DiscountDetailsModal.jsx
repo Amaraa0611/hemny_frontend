@@ -84,7 +84,7 @@ const DiscountDetailsModal = ({
                   style={{ maxHeight: '300px', minHeight: '150px' }}
                   onError={(e) => {
                     console.error('Image failed to load:', e.target.src);
-                    e.target.src = '/fallback-image.jpg';
+                    e.target.src = '/images/default-logo.png';
                   }}
                 />
               </div>
