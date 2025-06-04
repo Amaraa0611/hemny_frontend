@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{\"pages/admin/offers/index.tsx -> ../../../components/admin/offers\":{\"id\":\"pages/admin/offers/index.tsx -> ../../../components/admin/offers\",\"files\":[\"static/chunks/components_admin_offers_index_ts.js\"]},\"pages/admin/organizations/index.tsx -> ../../../components/admin/organizations/OrganizationsPage\":{\"id\":\"pages/admin/organizations/index.tsx -> ../../../components/admin/organizations/OrganizationsPage\",\"files\":[\"static/chunks/components_admin_organizations_OrganizationsPage_tsx.js\"]}}"
+self.__REACT_LOADABLE_MANIFEST="{}"

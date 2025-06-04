@@ -4,6 +4,7 @@ import { offerService } from '../../../services/offerService';
 import { organizationService } from '../../../services/organizationService';
 import { logoService } from '../../../services/logoService';
 import { ImageWithFallback } from '../../shared/ImageWithFallback';
+import { categoryService } from '../../../services/categoryService';
 
 interface OfferFormProps {
   offer: Offer | null;
@@ -67,6 +68,9 @@ const OfferForm: React.FC<OfferFormProps> = ({
   const [offerImagePreview, setOfferImagePreview] = useState<string>('');
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
+  // Add state for categories
+  const [categories, setCategories] = useState<Array<{ id: number; name_en: string; name_mn: string }>>([]);
+
   // Add function to fetch all organizations
   const fetchOrganizations = async () => {
     try {
@@ -80,7 +84,20 @@ const OfferForm: React.FC<OfferFormProps> = ({
 
   // Update the useEffect to fetch both organizations and categories when component mounts
   useEffect(() => {
-    fetchOrganizations();
+    const fetchData = async () => {
+      try {
+        const [orgsData, catsData] = await Promise.all([
+          organizationService.getAll(),
+          categoryService.getAll()
+        ]);
+        setOrganizations(orgsData);
+        setCategories(catsData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch data');
+      }
+    };
+    fetchData();
   }, []);
 
   // Update the organization fetch function to get categories and other details
@@ -216,6 +233,10 @@ const OfferForm: React.FC<OfferFormProps> = ({
       }));
     }
   }, [offer, offerType, organizations, fetchOrganizationDetails]);
+
+  useEffect(() => {
+    fetchOrganizationDetails();
+  }, [fetchOrganizationDetails]);
 
   // Add function to handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {

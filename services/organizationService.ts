@@ -55,7 +55,7 @@ export const organizationService = {
   create: async (data: CreateOrganizationData): Promise<Organization> => {
     try {
       console.log('Creating organization with data:', data);
-      const response = await fetch('/api/organizations', {
+      const response = await fetch('/organizations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export const organizationService = {
   update: async (id: number, data: Partial<CreateOrganizationData>): Promise<Organization> => {
     try {
       console.log('Updating organization with data:', data);
-      const response = await fetch(`${BACKEND_URL}/api/organizations/${id}`, {
+      const response = await fetch(`${BACKEND_URL}/organizations/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export const organizationService = {
 
   delete: async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`/api/organizations/${id}`, {
+      const response = await fetch(`/organizations/${id}`, {
         method: 'DELETE',
       });
 
@@ -133,7 +133,7 @@ export const organizationService = {
   },
 
   async updateCategories(orgId: number, data: { categoryIds: number[], subcategoryIds: number[] }) {
-    const response = await fetch(`${BACKEND_URL}/api/organizations/${orgId}/categories`, {
+    const response = await fetch(`${BACKEND_URL}/organizations/${orgId}/categories`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -149,7 +149,7 @@ export const organizationService = {
   },
 
   async removeCategories(orgId: number, data: { categoryIds: number[] }) {
-    const response = await fetch(`${BACKEND_URL}/api/organizations/${orgId}/categories`, {
+    const response = await fetch(`${BACKEND_URL}/organizations/${orgId}/categories`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -165,7 +165,7 @@ export const organizationService = {
   },
 
   getById: async (id: number) => {
-    const response = await fetch(`${BACKEND_URL}/api/organizations/${id}`);
+    const response = await fetch(`${BACKEND_URL}/organizations/${id}`);
     if (!response.ok) {
       throw new Error('Failed to fetch organization');
     }
@@ -174,7 +174,7 @@ export const organizationService = {
 
   getByName: async (orgName: string) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/organizations/search?name=${encodeURIComponent(orgName)}`);
+      const response = await fetch(`${BACKEND_URL}/organizations/search?name=${encodeURIComponent(orgName)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch organization');
       }
@@ -188,7 +188,7 @@ export const organizationService = {
 
   getCategories: async (orgId: number) => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/organizations/${orgId}/categories`);
+      const response = await fetch(`${BACKEND_URL}/organizations/${orgId}/categories`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         console.error('Categories fetch error:', errorData);
@@ -205,7 +205,7 @@ export const organizationService = {
 
   getAllCategories: async () => {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/categories`);
+      const response = await fetch(`${BACKEND_URL}/categories`);
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }

@@ -325,7 +325,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({
             </button>
             <button
               type="submit"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
             >
               Save
             </button>

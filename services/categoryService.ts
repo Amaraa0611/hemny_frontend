@@ -12,7 +12,7 @@ interface Category {
 export const categoryService = {
   async getAll(): Promise<Category[]> {
     try {
-      const response = await fetch(`${BACKEND_URL}/api/categories`);
+      const response = await fetch(`${BACKEND_URL}/categories`);
       if (!response.ok) {
         throw new Error(`Failed to fetch categories: ${response.statusText}`);
       }
