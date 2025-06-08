@@ -6,9 +6,12 @@ import Image from 'next/image';
 
 const OrganizationsPage: React.FC = () => {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedOrganization, setSelectedOrganization] = useState<Organization | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [orgToDelete, setOrgToDelete] = useState<Organization | null>(null);
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -16,6 +19,7 @@ const OrganizationsPage: React.FC = () => {
       setOrganizations(data);
     } catch (error) {
       console.error('Error fetching organizations:', error);
+      setError('Failed to fetch organizations');
     } finally {
       setIsLoading(false);
     }
@@ -25,45 +29,48 @@ const OrganizationsPage: React.FC = () => {
     fetchOrganizations();
   }, [fetchOrganizations]);
 
-  const handleDelete = async (orgId: number) => {
-    if (!window.confirm('Are you sure you want to delete this organization?')) {
-      return;
-    }
-    
+  const handleEdit = (organization: Organization) => {
+    setSelectedOrganization(organization);
+    setShowForm(true);
+  };
+
+  const handleDeleteClick = (org: Organization) => {
+    setOrgToDelete(org);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!orgToDelete) return;
+
     try {
-      await organizationService.delete(orgId);
-      setOrganizations(organizations.filter(org => org.org_id !== orgId));
+      await organizationService.delete(orgToDelete.org_id);
+      setOrganizations(organizations.filter(org => org.org_id !== orgToDelete.org_id));
+      setShowDeleteModal(false);
+      setOrgToDelete(null);
     } catch (error) {
       console.error('Error deleting organization:', error);
+      setError('Failed to delete organization');
     }
   };
 
-  const getLogoUrl = (logoPath: string) => {
-    // If it's a full URL containing '/images/', extract the path after it
-    if (logoPath.includes('/images/')) {
-      const pathAfterImages = logoPath.split('/images/').pop();
-      return `/images/${pathAfterImages}`;
-    }
-    
-    // If it's a relative path, make it absolute from the root
-    if (!logoPath.startsWith('/')) {
-      logoPath = '/' + logoPath;
-    }
-    return logoPath;
+  const handleFormSubmit = () => {
+    setShowForm(false);
+    setSelectedOrganization(null);
+    fetchOrganizations();
   };
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-64">Loading...</div>;
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Organizations</h2>
+        <h1 className="text-2xl font-bold">Organizations</h1>
         <button
           onClick={() => {
-            setEditingOrg(null);
-            setIsFormOpen(true);
+            setSelectedOrganization(null);
+            setShowForm(true);
           }}
           className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
         >
@@ -71,163 +78,91 @@ const OrganizationsPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid gap-6">
-        {organizations.map(org => (
-          <div key={org.org_id} className="bg-white rounded-lg shadow p-6">
-            <div className="flex justify-between items-start">
-              <div className="flex-1">
-                <div className="flex items-center gap-4">
-                  {/* Main Organization Logo */}
-                  {org.logos && org.logos.length > 0 && (
-                    <div className="relative w-32 h-32 border rounded overflow-hidden">
-                      <Image
-                        src={getLogoUrl(org.logos[0].url)}
-                        alt={org.org_name}
-                        width={128}
-                        height={128}
-                        className="max-w-full max-h-full object-contain p-1"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <h3 className="text-xl font-semibold">{org.org_name}</h3>
-                    <p className="text-gray-600 mt-1">{org.org_description}</p>
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {organizations.map(organization => (
+          <div
+            key={organization.org_id}
+            className="border rounded-lg p-4 hover:shadow-lg transition-shadow"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center space-x-4">
+                {organization.logo_url && (
+                  <div className="relative w-12 h-12">
+                    <Image
+                      src={organization.logo_url}
+                      alt={`${organization.org_name} logo`}
+                      fill
+                      className="object-contain rounded"
+                    />
                   </div>
+                )}
+                <div>
+                  <h2 className="text-xl font-semibold">{organization.org_name}</h2>
+                  <p className="text-gray-600 mb-2">{organization.org_description}</p>
                 </div>
-
-                {/* Organization Details */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Contact</p>
-                    {org.contact_info && (
-                      <div className="mt-1">
-                        <p>{org.contact_info.email}</p>
-                        <p>{org.contact_info.phone}</p>
-                        <p>{org.contact_info.address}</p>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Location</p>
-                    <p className="mt-1">{org.location}</p>
-                  </div>
-                </div>
-
-                {/* Terms and Conditions */}
-                {org.CashbackOffer?.terms_conditions && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-500">Terms and Conditions</p>
-                    <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-                      <pre className="whitespace-pre-wrap text-sm text-gray-700">{org.CashbackOffer.terms_conditions}</pre>
-                    </div>
-                  </div>
-                )}
-
-                {/* Offer Details */}
-                {org.offer_type === 'CASHBACK' && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-gray-500">Cashback Offer Details</p>
-                    <div className="mt-1 space-y-2">
-                      {org.CashbackOffer?.cashback_rate && (
-                        <p className="text-sm text-gray-700">
-                          <span className="font-medium">Cashback Rate:</span> {org.CashbackOffer.cashback_rate}
-                        </p>
-                      )}
-                      {org.CashbackOffer?.description && (
-                        <div className="mt-2">
-                          <p className="font-medium text-sm text-gray-700">Description:</p>
-                          <pre className="whitespace-pre-wrap text-sm text-gray-700 mt-1">{org.CashbackOffer.description}</pre>
-                        </div>
-                      )}
-                      {org.offer_description && (
-                        <div className="mt-2">
-                          <p className="font-medium text-sm text-gray-700">Offer Description:</p>
-                          <pre className="whitespace-pre-wrap text-sm text-gray-700 mt-1">{org.offer_description}</pre>
-                        </div>
-                      )}
-                      {org.start_date && org.end_date && (
-                        <p className="text-sm text-gray-700">
-                          <span className="font-medium">Valid:</span> {new Date(org.start_date).toLocaleDateString()} - {new Date(org.end_date).toLocaleDateString()}
-                        </p>
-                      )}
-                      {org.payment_option && (
-                        <p className="text-sm text-gray-700">
-                          <span className="font-medium">Payment Option:</span> {org.payment_option}
-                          {org.payment_option_2 && `, ${org.payment_option_2}`}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* All Organization Logos */}
-                {org.logos && org.logos.length > 0 && (
-                  <div className="mt-6">
-                    <p className="text-sm font-medium text-gray-500 mb-3">
-                      Organization Logos ({org.logos.length})
-                    </p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      {org.logos.map(logo => (
-                        <div 
-                          key={logo.id} 
-                          className="relative group bg-white rounded-lg p-3 border hover:border-blue-500 transition-colors"
-                        >
-                          <div className="aspect-w-16 aspect-h-9 flex items-center justify-center">
-                            <Image
-                              src={getLogoUrl(logo.url)}
-                              alt={`${org.org_name} ${logo.offer_type} logo`}
-                              width={128}
-                              height={128}
-                              className="max-w-full max-h-full object-contain"
-                            />
-                          </div>
-                          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-opacity rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100">
-                            <div className="text-white text-sm text-center p-2">
-                              <p className="font-semibold">{logo.offer_type}</p>
-                              <p>{logo.format}</p>
-                              <p>{logo.color_scheme}</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
-
-              {/* Action Buttons */}
-              <div className="flex space-x-2">
+              <div className="flex gap-2">
                 <button
-                  onClick={() => {
-                    setEditingOrg(org);
-                    setIsFormOpen(true);
-                  }}
+                  onClick={() => handleEdit(organization)}
                   className="text-blue-500 hover:text-blue-700"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(org.org_id)}
+                  onClick={() => handleDeleteClick(organization)}
                   className="text-red-500 hover:text-red-700"
                 >
                   Delete
                 </button>
               </div>
             </div>
+            <div className="text-sm text-gray-500">
+              <p>Website: {organization.website_url || 'N/A'}</p>
+              <p>Email: {organization.contact_info?.email || 'N/A'}</p>
+              <p>Phone: {organization.contact_info?.phone || 'N/A'}</p>
+              <p>Address: {organization.contact_info?.address || 'N/A'}</p>
+            </div>
           </div>
         ))}
       </div>
 
-      {isFormOpen && (
+      {showForm && (
         <OrganizationForm
-          organization={editingOrg}
-          onClose={() => setIsFormOpen(false)}
-          onSubmit={() => {
-            console.log('Form submitted, current editingOrg:', editingOrg);
-            setIsFormOpen(false);
-            fetchOrganizations();
-          }}
+          organization={selectedOrganization || undefined}
+          onSubmit={handleFormSubmit}
         />
+      )}
+
+      {showDeleteModal && orgToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg">
+            <h3 className="text-lg font-semibold mb-4">Confirm Delete</h3>
+            <p className="mb-4">Are you sure you want to delete {orgToDelete.org_name}?</p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setOrgToDelete(null);
+                }}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

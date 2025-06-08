@@ -13,94 +13,93 @@ interface LogoData {
   };
 }
 
+export interface CreateLogoData {
+  org_id: number;
+  url: string;
+  offer_type?: string;
+  format?: string;
+  color_scheme?: string;
+}
+
 const convertToRelativePath = (absolutePath: string): string => {
-  // If already relative or HTTP URL, return as is
-  if (absolutePath.startsWith('/') || absolutePath.startsWith('http')) {
-    return absolutePath;
-  }
-  
-  // Convert absolute path to relative
-  const relativePath = absolutePath.split('/public/').pop();
-  return relativePath ? `/${relativePath}` : absolutePath;
+  // Remove the domain and any leading paths to get just the relative path
+  const url = new URL(absolutePath);
+  return url.pathname;
 };
 
-export const logoService = {
+const logoService = {
   getByOrgId: async (orgId: number): Promise<Logo[]> => {
     try {
-      if (!orgId) {
-        throw new Error('Organization ID is required');
-      }
-      console.log('Fetching logos for org_id:', orgId);
-      const response = await fetch(`${BACKEND_URL}/logos?org_id=${orgId}`);
+      const response = await fetch(`${BACKEND_URL}/logos/${orgId}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch logos: ${response.statusText}`);
+        console.warn('Failed to fetch logos, returning empty array');
+        return [];
       }
-      const logos = await response.json();
-      
-      // Transform any absolute paths to relative URLs for frontend display
-      const transformedLogos = logos.map((logo: Logo) => ({
-        ...logo,
-        url: logo.url.startsWith('/') ? logo.url : `/images/logo/merchant_logo/${logo.url.split('/').pop()}`
-      }));
-      
-      console.log('Transformed logos:', transformedLogos);
-      return transformedLogos;
+      return await response.json();
     } catch (error) {
-      console.error('Error in getByOrgId:', error);
+      console.warn('Error fetching logos:', error);
+      return [];
+    }
+  },
+
+  create: async (logoData: CreateLogoData): Promise<Logo> => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/logos`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(logoData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create logo');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error creating logo:', error);
       throw error;
     }
   },
 
   upload: async (logoData: LogoData) => {
-    console.log('logoService.upload called with:', logoData);
-
-    if (!logoData || !logoData.originalPath || !logoData.orgId) {
-      console.error('Missing required fields:', {
-        originalPath: !logoData?.originalPath,
-        orgId: !logoData?.orgId
+    try {
+      const response = await fetch(`${BACKEND_URL}/logos/upload`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(logoData),
       });
-      throw new Error('Invalid logo data provided');
-    }
 
-    // Send both paths to backend
-    const response = await fetch(`${BACKEND_URL}/api/logos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(logoData), // Send as is, with both paths
-    });
-    
-    const responseData = await response.json();
-    
-    if (!response.ok) {
-      console.error('Upload failed with response:', responseData);
-      throw new Error(responseData.message || responseData.error || 'Failed to upload logo');
+      if (!response.ok) {
+        throw new Error('Failed to upload logo');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      throw error;
     }
-    
-    console.log('Upload successful:', responseData);
-    
-    // Ensure frontend gets relative paths
-    if (Array.isArray(responseData)) {
-      return responseData.map(logo => ({
-        ...logo,
-        url: logo.url.startsWith('/') ? logo.url : `/images/logo/merchant_logo/${logo.url.split('/').pop()}`
-      }));
-    }
-    
-    return responseData;
   },
 
-  deleteLogo: async (logoId: number) => {
-    const response = await fetch(`${BACKEND_URL}/api/logos/${logoId}`, {
-      method: 'DELETE',
-    });
+  deleteLogo: async (logoId: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/logos/${logoId}`, {
+        method: 'DELETE',
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || error.error || 'Failed to delete logo');
+      if (!response.ok) {
+        throw new Error('Failed to delete logo');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting logo:', error);
+      throw error;
     }
+  },
+};
 
-    return true;
-  }
-}; 
+export default logoService; 

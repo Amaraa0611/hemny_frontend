@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminSidebar from '../admin/AdminSidebar';
+import AdminSidebar from './AdminSidebar';
 import Head from 'next/head';
 
 interface AdminLayoutProps {
@@ -14,7 +14,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   return (
     <>
       <Head>
-        <title>{title} - Your App Name</title>
+        <title>{`${title} - Your App Name`}</title>
       </Head>
       <div className="flex min-h-screen bg-gray-100">
         <AdminSidebar />

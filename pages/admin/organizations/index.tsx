@@ -1,6 +1,6 @@
 import { NextPage } from 'next';
 import dynamic from 'next/dynamic';
-import AdminLayout from '../../../components/admin/layout/AdminLayout';
+import AdminLayout from '../../../components/layout/AdminLayout';
 
 // Dynamically import the OrganizationsPage component with no SSR
 const OrganizationsPage = dynamic(
@@ -16,4 +16,4 @@ const AdminOrganizationsPage: NextPage = () => {
   );
 };
 
-export default AdminOrganizationsPage; 
+export default AdminOrganizationsPage;

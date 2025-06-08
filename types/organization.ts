@@ -1,4 +1,5 @@
 import { Logo } from './logo';
+import { Category } from './category';
 
 interface CashbackOffer {
   offer_id: number;
@@ -18,32 +19,35 @@ export interface Organization {
   website_url?: string;
   logo_url?: string;
   location?: string;
-  category_id?: number;
-  subcategory_id?: number;
-  categoryIds?: number[];
-  subcategoryIds?: number[];
-  terms_conditions?: string;
   contact_info?: {
-    email: string;
-    phone: string;
-    address: string;
+    email?: string;
+    phone?: string;
+    address?: string;
   };
   brand_colors?: {
     primary: string;
     secondary: string;
     accent: string;
   };
-  logos?: Logo[];
-  CashbackOffer?: CashbackOffer;
+  created_at?: string;
+  updated_at?: string;
+  categories?: Category[];
+  logos?: Array<{
+    id: number;
+    url: string;
+    offer_type: string;
+    format: string;
+    color_scheme: string;
+  }>;
+  CashbackOffer?: {
+    cashback_rate: string;
+    terms_conditions: string;
+    description: string;
+  };
   offer_type?: string;
-  cashback_rate?: string;
   offer_description?: string;
-  offer_title?: string;
   start_date?: string;
   end_date?: string;
-  is_active?: boolean;
-  is_featured?: boolean;
   payment_option?: string;
   payment_option_2?: string;
-  payment_org?: number;
 } 

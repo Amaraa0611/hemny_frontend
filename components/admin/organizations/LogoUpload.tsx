@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Logo } from '../../../types/logo';
-import { logoService } from '../../../services/logoService';
+import logoService from '../../../services/logoService';
 import Image from 'next/image';
 
 interface LogoUploadProps {
