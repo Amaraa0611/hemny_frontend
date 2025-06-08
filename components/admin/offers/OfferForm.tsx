@@ -12,9 +12,10 @@ interface OfferFormProps {
 }
 
 interface FormData {
-  offer_type: OfferType;
+  offer_id?: number;
   org_id: number;
-  category_id: number;
+  category_id: number | null;
+  offer_type: OfferType;
   offer_title: string;
   offer_description: string;
   start_date: string;
@@ -39,7 +40,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
   const [formData, setFormData] = useState<FormData>({
     offer_type: offerType,
     org_id: offer?.org_id || 0,
-    category_id: offer?.category_id || 0,
+    category_id: offer?.category_id || null,
     offer_title: offer?.offer_title || '',
     offer_description: offer?.offer_description || '',
     start_date: offer?.start_date || '',
@@ -83,8 +84,33 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
 
       const orgId = org.org_id;
       console.log('Found organization ID:', orgId);
+
+      // Get organization categories
+      const orgCategories = await organizationService.getCategories(orgId);
+      console.log('Organization categories:', orgCategories);
+
+      // If the organization has categories, set the first one as default
+      if (orgCategories && orgCategories.length > 0) {
+        const firstCategory = orgCategories[0];
+        setFormData(prev => ({
+          ...prev,
+          category_id: firstCategory.id
+        }));
+      } else {
+        console.log('No categories found for organization');
+        // Set category_id to null if no categories are found
+        setFormData(prev => ({
+          ...prev,
+          category_id: null
+        }));
+      }
     } catch (error) {
       console.error('Error in fetchOrganizationDetails:', error);
+      // Set category_id to null on error
+      setFormData(prev => ({
+        ...prev,
+        category_id: null
+      }));
     }
   }, [organizations]);
 
@@ -115,32 +141,43 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
   // Update form data when offer changes
   useEffect(() => {
     if (offer) {
-      const termsAndConditions = offer.terms_conditions || '';
+      // Find the organization name using org_id
+      const org = organizations.find(o => o.org_id === offer.org_id);
+      if (org) {
+        setSelectedOrgName(org.org_name);
+      }
+
+      // Set form data with proper type handling
       setFormData({
-        org_id: offer.org_id || 0,
-        category_id: offer.category_id || 0,
-        offer_type: offer.offer_type || 'DISCOUNT',
-        offer_title: offer.offer_title || '',
-        offer_description: offer.offer_description || '',
-        start_date: offer.start_date || '',
-        end_date: offer.end_date || '',
-        is_active: offer.is_active ?? true,
-        is_featured: offer.is_featured ?? false,
-        picture_url: offer.picture_url || '',
-        payment_org: offer.payment_org || 0,
-        payment_option: offer.payment_option || '',
-        payment_option_2: offer.payment_option_2 || '',
+        offer_id: offer.offer_id,
+        org_id: offer.org_id,
+        category_id: offer.category_id,
+        offer_type: offer.offer_type,
+        offer_title: offer.offer_title,
+        offer_description: offer.offer_description,
+        start_date: offer.start_date,
+        end_date: offer.end_date,
+        is_active: offer.is_active,
+        is_featured: offer.is_featured,
+        picture_url: offer.picture_url,
+        payment_org: offer.payment_org,
+        payment_option: offer.payment_option,
+        payment_option_2: offer.payment_option_2,
         source_link: offer.source_link || '',
-        terms_conditions: termsAndConditions,
+        // Handle terms_conditions based on offer type
+        terms_conditions: offer.offer_type === 'CASHBACK' 
+          ? offer.CashbackOffer?.terms_conditions || ''
+          : offer.terms_conditions || '',
+        // Set specific offer type data
         discount_value: offer.DiscountOffer?.discount_value || '',
-        discount_type: offer.DiscountOffer?.discount_type || 'Percentage',
+        discount_type: offer.DiscountOffer?.discount_type || '',
         offer_code: offer.DiscountOffer?.offer_code || '',
         cashback_rate: offer.CashbackOffer?.cashback_rate || '',
         loyalty_points: offer.LoyaltyOffer?.loyalty_points || '',
         membership_requirement: offer.LoyaltyOffer?.membership_requirement || ''
       });
     }
-  }, [offer]);
+  }, [offer, organizations]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,10 +185,26 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
     setError(null);
 
     try {
+      // Get the selected organization
+      const selectedOrg = organizations.find(org => org.org_name === selectedOrgName);
+      if (!selectedOrg) {
+        throw new Error('Please select an organization');
+      }
+
+      // Get organization categories
+      const orgCategories = await organizationService.getCategories(selectedOrg.org_id);
+      if (!orgCategories || orgCategories.length === 0) {
+        throw new Error('Selected organization has no categories');
+      }
+
+      // Use the first category as default
+      const defaultCategory = orgCategories[0];
+      console.log('Using category:', defaultCategory);
+
       const offerData = {
         offer_id: offer?.offer_id || 0,
-        org_id: Number(formData.org_id),
-        category_id: Number(formData.category_id),
+        org_id: Number(selectedOrg.org_id),
+        category_id: Number(defaultCategory.category_id),
         offer_type: formData.offer_type,
         offer_title: formData.offer_title,
         offer_description: formData.offer_description,
@@ -190,6 +243,8 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
         ChallengeOffer: null
       };
 
+      console.log('Submitting offer data:', offerData);
+
       if (offer?.offer_id) {
         await offerService.update(offer.offer_id, offerData);
       } else {
@@ -197,9 +252,9 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
       }
 
       onSubmit();
-    } catch (error) {
-      console.error('Error submitting offer:', error);
-      setError('Failed to submit offer');
+    } catch (err) {
+      console.error('Error submitting offer:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }

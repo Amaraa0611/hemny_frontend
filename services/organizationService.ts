@@ -288,14 +288,20 @@ export const organizationService = {
   getCategories: async (orgId: number) => {
     try {
       const response = await fetch(`${BACKEND_URL}/organizations/${orgId}/categories`);
+      const result = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error('Failed to fetch organization categories');
+        console.error('Failed to fetch organization categories:', result);
+        return []; // Return empty array instead of throwing error
       }
-      return await response.json();
+      
+      // Handle the nested data structure
+      const categories = result.data || [];
+      console.log('Parsed categories:', categories);
+      return categories;
     } catch (error) {
       console.error('Error fetching organization categories:', error);
-      return [];
+      return []; // Return empty array on error
     }
   },
 
