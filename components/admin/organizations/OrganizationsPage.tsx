@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Organization } from '../../../types/organization';
-import { organizationService } from '../../../services/organizationService';
+import { Organization } from '@/types/organization';
+import { organizationService } from '@/services/organizationService';
 import { OrganizationForm } from './OrganizationForm';
-import Image from 'next/image';
 
 const OrganizationsPage: React.FC = () => {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
@@ -45,11 +44,6 @@ const OrganizationsPage: React.FC = () => {
     }
   };
 
-  const isValidLogoUrl = (url: string | undefined) => {
-    if (!url) return false;
-    return url.startsWith('/') || url.startsWith('http');
-  };
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -69,42 +63,12 @@ const OrganizationsPage: React.FC = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {organizations.map(organization => (
-          <div
-            key={organization.org_id}
-            className="border rounded-lg p-4 hover:shadow-lg transition-shadow"
-          >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {organizations.map((organization) => (
+          <div key={organization.org_id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-start mb-4">
-              <div className="flex items-center space-x-4">
-                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
-                  {isValidLogoUrl(organization.logo_url) ? (
-                    <Image
-                      src={organization.logo_url || ''}
-                      alt={`${organization.org_name} logo`}
-                      fill
-                      className="object-contain"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                      <span className="text-gray-400 text-xl">
-                        {organization.org_name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold">{organization.org_name}</h2>
-                  <p className="text-gray-600 mb-2">{organization.org_description}</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
+              <h2 className="text-xl font-semibold">{organization.org_name}</h2>
+              <div className="flex space-x-2">
                 <button
                   onClick={() => handleEdit(organization)}
                   className="text-blue-500 hover:text-blue-700"
@@ -119,24 +83,51 @@ const OrganizationsPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              <p>Website: {organization.website_url || 'N/A'}</p>
-              <p>Email: {organization.contact_info?.email || 'N/A'}</p>
-              <p>Phone: {organization.contact_info?.phone || 'N/A'}</p>
-              <p>Address: {organization.contact_info?.address || 'N/A'}</p>
+            <p className="text-gray-600 mb-4">{organization.org_description}</p>
+            <div className="space-y-2">
+              <p><span className="font-medium">Website:</span> {organization.website_url}</p>
+              <p><span className="font-medium">Location:</span> {organization.location}</p>
+              <p><span className="font-medium">Email:</span> {organization.contact_info?.email}</p>
+              <p><span className="font-medium">Phone:</span> {organization.contact_info?.phone}</p>
             </div>
           </div>
         ))}
       </div>
 
+      {/* Modal/Overlay */}
       {showForm && (
-        <OrganizationForm
-          organization={selectedOrganization || undefined}
-          onSuccess={() => {
-            setShowForm(false);
-            fetchOrganizations();
-          }}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">
+                {selectedOrganization ? 'Edit Organization' : 'Add Organization'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowForm(false);
+                  setSelectedOrganization(null);
+                }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <OrganizationForm
+              organization={selectedOrganization || undefined}
+              onSuccess={() => {
+                setShowForm(false);
+                setSelectedOrganization(null);
+                fetchOrganizations();
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
       )}
 
       {showDeleteModal && orgToDelete && (
