@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Organization } from '../../../types/organization';
 import { organizationService } from '../../../services/organizationService';
+import { Category } from '../../../types/category';
 
 interface OrganizationFormProps {
   organization?: Organization;
@@ -12,12 +13,21 @@ interface OrganizationFormData {
   org_description: string;
   logo_url: string;
   website_url: string;
+  location: string;
   contact_info: {
     email: string;
     phone: string;
     address: string;
   };
-  is_active: boolean;
+  brand_colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  categories: Array<{
+    categoryId: number;
+    subcategoryId: number | null;
+  }>;
 }
 
 const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSubmit }) => {
@@ -26,16 +36,43 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     org_description: '',
     logo_url: '',
     website_url: '',
+    location: '',
     contact_info: {
       email: '',
       phone: '',
       address: ''
     },
-    is_active: true
+    brand_colors: {
+      primary: '#000000',
+      secondary: '#FFFFFF',
+      accent: '#000000'
+    },
+    categories: []
   });
 
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Fetch categories
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('/api/categories');
+        if (!response.ok) {
+          throw new Error('Failed to fetch categories');
+        }
+        const data = await response.json();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        setError('Failed to load categories');
+      }
+    };
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (organization) {
@@ -44,13 +81,28 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
         org_description: organization.org_description || '',
         logo_url: organization.logo_url || '',
         website_url: organization.website_url || '',
+        location: organization.location || '',
         contact_info: {
           email: organization.contact_info?.email || '',
           phone: organization.contact_info?.phone || '',
           address: organization.contact_info?.address || ''
         },
-        is_active: true
+        brand_colors: organization.brand_colors || {
+          primary: '#000000',
+          secondary: '#FFFFFF',
+          accent: '#000000'
+        },
+        categories: organization.categories?.map(cat => ({
+          categoryId: cat.id,
+          subcategoryId: cat.OrganizationCategory?.subcategory_id || null
+        })) || []
       });
+
+      // Set initial category and subcategory if they exist
+      if (organization.categories?.[0]) {
+        setSelectedCategory(organization.categories[0].id);
+        setSelectedSubcategory(organization.categories[0].OrganizationCategory?.subcategory_id || null);
+      }
     }
   }, [organization]);
 
@@ -60,10 +112,15 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     setError(null);
 
     try {
+      const submitData = {
+        ...formData,
+        categoryIds: formData.categories
+      };
+
       if (organization?.org_id) {
-        await organizationService.update(organization.org_id, formData);
+        await organizationService.update(organization.org_id, submitData);
       } else {
-        await organizationService.create(formData);
+        await organizationService.create(submitData);
       }
 
       onSubmit();
@@ -73,6 +130,34 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleAddCategory = () => {
+    if (selectedCategory) {
+      setFormData(prev => ({
+        ...prev,
+        categories: [
+          ...prev.categories,
+          {
+            categoryId: selectedCategory,
+            subcategoryId: selectedSubcategory
+          }
+        ]
+      }));
+      setSelectedCategory(null);
+      setSelectedSubcategory(null);
+    }
+  };
+
+  const handleRemoveCategory = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: prev.categories.filter((_, i) => i !== index)
+    }));
+  };
+
+  const getSubcategories = (categoryId: number) => {
+    return categories.find(cat => cat.id === categoryId)?.children || [];
   };
 
   return (
@@ -139,6 +224,17 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
           </div>
 
           <div className="mb-4">
+            <label className="block mb-1">Location</label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={e => setFormData({ ...formData, location: e.target.value })}
+              className="w-full border rounded px-3 py-2"
+              placeholder="City, Country"
+            />
+          </div>
+
+          <div className="mb-4">
             <label className="block mb-1">Email</label>
             <input
               type="email"
@@ -178,6 +274,111 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
               rows={2}
               placeholder="123 Main St, City, Country"
             />
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-1">Brand Colors</label>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm text-gray-600">Primary</label>
+                <input
+                  type="color"
+                  value={formData.brand_colors.primary}
+                  onChange={e => setFormData({
+                    ...formData,
+                    brand_colors: { ...formData.brand_colors, primary: e.target.value }
+                  })}
+                  className="w-full h-10 border rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600">Secondary</label>
+                <input
+                  type="color"
+                  value={formData.brand_colors.secondary}
+                  onChange={e => setFormData({
+                    ...formData,
+                    brand_colors: { ...formData.brand_colors, secondary: e.target.value }
+                  })}
+                  className="w-full h-10 border rounded"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600">Accent</label>
+                <input
+                  type="color"
+                  value={formData.brand_colors.accent}
+                  onChange={e => setFormData({
+                    ...formData,
+                    brand_colors: { ...formData.brand_colors, accent: e.target.value }
+                  })}
+                  className="w-full h-10 border rounded"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-1">Categories</label>
+            <div className="space-y-2">
+              {formData.categories.map((cat, index) => {
+                const category = categories.find(c => c.id === cat.categoryId);
+                const subcategory = category?.children?.find(s => s.id === cat.subcategoryId);
+                return (
+                  <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                    <span>
+                      {category?.name_en} {subcategory ? `- ${subcategory.name_en}` : ''}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategory(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
+              <div className="flex gap-2">
+                <select
+                  value={selectedCategory || ''}
+                  onChange={e => {
+                    setSelectedCategory(Number(e.target.value));
+                    setSelectedSubcategory(null);
+                  }}
+                  className="flex-1 border rounded px-3 py-2"
+                >
+                  <option value="">Select Category</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name_en}
+                    </option>
+                  ))}
+                </select>
+                {selectedCategory && (
+                  <select
+                    value={selectedSubcategory || ''}
+                    onChange={e => setSelectedSubcategory(Number(e.target.value))}
+                    className="flex-1 border rounded px-3 py-2"
+                  >
+                    <option value="">Select Subcategory</option>
+                    {getSubcategories(selectedCategory).map(sub => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name_en}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                <button
+                  type="button"
+                  onClick={handleAddCategory}
+                  disabled={!selectedCategory}
+                  className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="flex justify-end gap-2">
