@@ -17,14 +17,9 @@ type CreateOrganizationData = {
     secondary: string;
     accent: string;
   };
-  CashbackOffer?: {
-    cashback_rate: string;
-    terms_conditions: string;
-    description: string;
-  };
-  categoryIds?: Array<{
-    categoryId: number;
-    subcategoryId: number | null;
+  categories?: Array<{
+    category_id: number;
+    subcategory_id: number | null;
   }>;
 };
 
@@ -36,29 +31,19 @@ export const organizationService = {
         throw new Error('Failed to fetch organizations');
       }
       const result = await response.json();
-      console.log('Raw organizations data:', result);
-      
       const organizations = Array.isArray(result) ? result : (result.data || []);
-      const processedOrgs = organizations.map((org: any) => {
-        console.log('Processing organization:', org);
-        console.log('Organization categories:', org.categories);
-        
-        return {
-          org_id: org.org_id,
-          org_name: org.org_name,
-          org_description: org.org_description,
-          website_url: org.website_url,
-          logo_url: org.logo_url,
-          location: org.location,
-          contact_info: org.contact_info,
-          brand_colors: org.brand_colors,
-          categories: org.categories || [],
-          CashbackOffer: org.CashbackOffer || null,
-        };
-      });
-      
-      console.log('Processed organizations:', processedOrgs);
-      return processedOrgs;
+      return organizations.map((org: any) => ({
+        org_id: org.org_id,
+        org_name: org.org_name,
+        org_description: org.org_description,
+        website_url: org.website_url,
+        logo_url: org.logo_url,
+        location: org.location,
+        contact_info: org.contact_info,
+        brand_colors: org.brand_colors,
+        categories: org.categories || [],
+        CashbackOffer: org.CashbackOffer || null,
+      }));
     } catch (error) {
       console.error('Error fetching organizations:', error);
       return [];
@@ -68,20 +53,37 @@ export const organizationService = {
   create: async (data: CreateOrganizationData): Promise<Organization> => {
     try {
       console.log('Creating organization with data:', data);
+      console.log('Categories in create data:', data.categories);
+      
+      // Ensure categories are included in the request
+      const requestData = {
+        ...data,
+        categories: data.categories || []
+      };
+      
+      console.log('Request data being sent:', requestData);
+      
       const response = await fetch(`${BACKEND_URL}/organizations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestData),
       });
-
+      
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(`Failed to create organization: ${errorData?.message || response.statusText}`);
+        console.error('Create failed with response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        throw new Error(`Failed to create organization: ${JSON.stringify(errorData?.message) || response.statusText}`);
       }
 
-      return response.json();
+      const result = await response.json();
+      console.log('Create successful, response:', result);
+      return result;
     } catch (error) {
       console.error('Error creating organization:', error);
       throw error;
@@ -91,22 +93,37 @@ export const organizationService = {
   update: async (id: number, data: Partial<CreateOrganizationData>): Promise<Organization> => {
     try {
       console.log('Updating organization with data:', data);
+      console.log('Categories in update data:', data.categories);
+      
+      // Ensure categories are included in the request
+      const requestData = {
+        ...data,
+        categories: data.categories || []
+      };
+      
+      console.log('Request data being sent:', requestData);
+      
       const response = await fetch(`${BACKEND_URL}/organizations/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        throw new Error(`Failed to update organization: ${errorData?.message || response.statusText}`);
+        console.error('Update failed with response:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData
+        });
+        throw new Error(`Failed to update organization: ${JSON.stringify(errorData?.message) || response.statusText}`);
       }
 
-      const updatedOrg = await response.json();
-      console.log('Organization updated successfully:', updatedOrg);
-      return updatedOrg;
+      const result = await response.json();
+      console.log('Update successful, response:', result);
+      return result;
     } catch (error) {
       console.error('Error updating organization:', error);
       throw error;
@@ -115,13 +132,61 @@ export const organizationService = {
 
   delete: async (id: number): Promise<void> => {
     try {
-      const response = await fetch(`/organizations/${id}`, {
+      // First get the organization to check for logo
+      const orgResponse = await fetch(`${BACKEND_URL}/organizations/${id}`);
+      if (!orgResponse.ok) {
+        throw new Error('Failed to fetch organization details');
+      }
+      const organization = await orgResponse.json();
+
+      // Delete the organization (this should cascade delete categories relationships)
+      const response = await fetch(`${BACKEND_URL}/organizations/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new Error(`Failed to delete organization: ${errorData?.message || response.statusText}`);
+      }
+
+      // If there's a logo, delete it from storage
+      if (organization.logo_url) {
+        try {
+          const logoResponse = await fetch(`${BACKEND_URL}/upload/delete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ filePath: organization.logo_url }),
+          });
+
+          if (!logoResponse.ok) {
+            console.warn('Failed to delete organization logo:', await logoResponse.text());
+          }
+        } catch (error) {
+          console.warn('Error deleting organization logo:', error);
+        }
+      }
+
+      // If there's a cashback offer, delete it
+      if (organization.CashbackOffer) {
+        try {
+          const offerResponse = await fetch(`${BACKEND_URL}/cashback-offers/${organization.CashbackOffer.offer_id}`, {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!offerResponse.ok) {
+            console.warn('Failed to delete cashback offer:', await offerResponse.text());
+          }
+        } catch (error) {
+          console.warn('Error deleting cashback offer:', error);
+        }
       }
     } catch (error) {
       console.error('Error deleting organization:', error);
@@ -225,12 +290,9 @@ export const organizationService = {
       const response = await fetch(`${BACKEND_URL}/organizations/${orgId}/categories`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.error('Categories fetch error:', errorData);
         throw new Error('Failed to fetch organization categories');
       }
-      const data = await response.json();
-      console.log('Categories data:', data); // Debug log
-      return data;
+      return await response.json();
     } catch (error) {
       console.error('Error fetching organization categories:', error);
       return [];
@@ -244,7 +306,6 @@ export const organizationService = {
         throw new Error('Failed to fetch categories');
       }
       const result = await response.json();
-      console.log('All categories response:', result); // Debug log
       return result.data || [];
     } catch (error) {
       console.error('Error fetching all categories:', error);

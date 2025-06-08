@@ -54,9 +54,15 @@ const OrganizationsPage: React.FC = () => {
   };
 
   const handleFormSubmit = () => {
+    console.log('Form submitted, closing form and refreshing data');
     setShowForm(false);
     setSelectedOrganization(null);
     fetchOrganizations();
+  };
+
+  const isValidLogoUrl = (url: string | undefined) => {
+    if (!url) return false;
+    return url.startsWith('/') || url.startsWith('http');
   };
 
   if (isLoading) {
@@ -92,16 +98,22 @@ const OrganizationsPage: React.FC = () => {
           >
             <div className="flex justify-between items-start mb-4">
               <div className="flex items-center space-x-4">
-                {organization.logo_url && (
-                  <div className="relative w-12 h-12">
+                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100">
+                  {isValidLogoUrl(organization.logo_url) ? (
                     <Image
-                      src={organization.logo_url}
+                      src={organization.logo_url || ''}
                       alt={`${organization.org_name} logo`}
                       fill
-                      className="object-contain rounded"
+                      className="object-contain"
                     />
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                      <span className="text-gray-400 text-xl">
+                        {organization.org_name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                </div>
                 <div>
                   <h2 className="text-xl font-semibold">{organization.org_name}</h2>
                   <p className="text-gray-600 mb-2">{organization.org_description}</p>

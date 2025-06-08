@@ -17,7 +17,8 @@ export default async function handler(
         return res.status(200).json(data);
 
       case 'POST':
-        console.log('Received POST request with body:', req.body);
+        console.log('Received POST request with body:', JSON.stringify(req.body, null, 2));
+        console.log('Categories data:', JSON.stringify(req.body.categories, null, 2));
         
         const createResponse = await fetch(`${BACKEND_URL}/api/organizations`, {
           method: 'POST',
@@ -27,12 +28,16 @@ export default async function handler(
           body: JSON.stringify(req.body),
         });
 
+        console.log('Backend response status:', createResponse.status);
+        
         if (!createResponse.ok) {
           const errorData = await createResponse.json().catch(() => null);
-          throw new Error(`Backend returned ${createResponse.status}: ${errorData || ''}`);
+          console.error('Backend error response:', errorData);
+          throw new Error(`Backend returned ${createResponse.status}: ${JSON.stringify(errorData) || ''}`);
         }
 
         const createData = await createResponse.json();
+        console.log('Backend success response:', createData);
         return res.status(201).json(createData);
 
       default:
