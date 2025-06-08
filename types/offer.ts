@@ -38,6 +38,7 @@ export interface DiscountOffer {
   discount_value: string;
   discount_type: string;
   offer_code: string;
+  terms_conditions: string;
 }
 
 export interface CashbackOffer {

@@ -53,8 +53,8 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
     payment_option_2: offer?.payment_option_2 || '',
     source_link: offer?.source_link || '',
     terms_conditions: offer?.terms_conditions || '',
-    discount_value: offer?.DiscountOffer?.discount_value || '',
-    discount_type: offer?.DiscountOffer?.discount_type || '',
+    discount_value: offer?.DiscountOffer?.discount_value || '0',
+    discount_type: offer?.DiscountOffer?.discount_type || 'Percentage',
     offer_code: offer?.DiscountOffer?.offer_code || '',
     cashback_rate: offer?.CashbackOffer?.cashback_rate || '',
     loyalty_points: offer?.LoyaltyOffer?.loyalty_points || '',
@@ -167,6 +167,8 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
         source_link: offer.source_link || '',
         terms_conditions: offer.offer_type === 'CASHBACK' 
           ? offer.CashbackOffer?.terms_conditions || ''
+          : offer.offer_type === 'DISCOUNT'
+          ? offer.DiscountOffer?.terms_conditions || ''
           : offer.terms_conditions || '',
         discount_value: offer.DiscountOffer?.discount_value || '',
         discount_type: offer.DiscountOffer?.discount_type || '',
@@ -175,7 +177,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
         loyalty_points: offer.LoyaltyOffer?.loyalty_points || '',
         membership_requirement: offer.LoyaltyOffer?.membership_requirement || ''
       };
-      console.log('Setting new form data:', newFormData); // Debug log
+      console.log('Setting new form data:', newFormData);
       setFormData(newFormData);
     }
   }, [offer, organizations]);
@@ -252,7 +254,8 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               offer_id: offer?.offer_id || 0,
               discount_value: formData.discount_value,
               discount_type: formData.discount_type,
-              offer_code: formData.offer_code
+              offer_code: formData.offer_code,
+              terms_conditions: formData.terms_conditions
             },
             CashbackOffer: null,
             LoyaltyOffer: null,
@@ -459,6 +462,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                   value={formData.discount_value}
                   onChange={e => setFormData({ ...formData, discount_value: e.target.value })}
                   className="w-full border rounded px-3 py-2"
+                  placeholder="e.g., 10% or $10"
                   required
                 />
               </div>
@@ -490,24 +494,23 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
           )}
 
           {formData.offer_type === 'CASHBACK' && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Cashback Rate</label>
-                <input
-                  type="text"
-                  name="cashback_rate"
-                  value={formData.cashback_rate}
-                  onChange={(e) => {
-                    console.log('Cashback rate changed:', e.target.value);
-                    setFormData(prev => ({
-                      ...prev,
-                      cashback_rate: e.target.value
-                    }));
-                  }}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="e.g., 10%"
-                />
-              </div>
+            <div className="mb-4">
+              <label className="block mb-1">Cashback Rate</label>
+              <input
+                type="text"
+                name="cashback_rate"
+                value={formData.cashback_rate}
+                onChange={(e) => {
+                  console.log('Cashback rate changed:', e.target.value);
+                  setFormData(prev => ({
+                    ...prev,
+                    cashback_rate: e.target.value
+                  }));
+                }}
+                className="w-full border rounded px-3 py-2"
+                placeholder="e.g., 10%"
+                required
+              />
             </div>
           )}
 
