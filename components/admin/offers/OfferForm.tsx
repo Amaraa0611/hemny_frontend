@@ -141,6 +141,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
   // Update form data when offer changes
   useEffect(() => {
     if (offer) {
+      console.log('Loading offer data:', offer); // Debug log
       // Find the organization name using org_id
       const org = organizations.find(o => o.org_id === offer.org_id);
       if (org) {
@@ -148,7 +149,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
       }
 
       // Set form data with proper type handling
-      setFormData({
+      const newFormData = {
         offer_id: offer.offer_id,
         org_id: offer.org_id,
         category_id: offer.category_id,
@@ -164,18 +165,18 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
         payment_option: offer.payment_option,
         payment_option_2: offer.payment_option_2,
         source_link: offer.source_link || '',
-        // Handle terms_conditions based on offer type
         terms_conditions: offer.offer_type === 'CASHBACK' 
           ? offer.CashbackOffer?.terms_conditions || ''
           : offer.terms_conditions || '',
-        // Set specific offer type data
         discount_value: offer.DiscountOffer?.discount_value || '',
         discount_type: offer.DiscountOffer?.discount_type || '',
         offer_code: offer.DiscountOffer?.offer_code || '',
         cashback_rate: offer.CashbackOffer?.cashback_rate || '',
         loyalty_points: offer.LoyaltyOffer?.loyalty_points || '',
         membership_requirement: offer.LoyaltyOffer?.membership_requirement || ''
-      });
+      };
+      console.log('Setting new form data:', newFormData); // Debug log
+      setFormData(newFormData);
     }
   }, [offer, organizations]);
 
@@ -185,6 +186,8 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
     setError(null);
 
     try {
+      console.log('Current form data before submission:', formData); // Debug log
+
       // Get the selected organization
       const selectedOrg = organizations.find(org => org.org_name === selectedOrgName);
       if (!selectedOrg) {
@@ -199,9 +202,9 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
 
       // Use the first category as default
       const defaultCategory = orgCategories[0];
-      console.log('Using category:', defaultCategory);
 
-      const offerData = {
+      // Prepare the base offer data
+      const baseOfferData = {
         offer_id: offer?.offer_id || 0,
         org_id: Number(selectedOrg.org_id),
         category_id: Number(defaultCategory.category_id),
@@ -217,33 +220,60 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
         payment_option: formData.payment_option,
         payment_option_2: formData.payment_option_2,
         source_link: formData.source_link,
-        terms_conditions: formData.terms_conditions,
-        DiscountOffer: formData.offer_type === 'DISCOUNT' ? {
-          offer_id: offer?.offer_id || 0,
-          discount_value: formData.discount_value,
-          discount_type: formData.discount_type,
-          offer_code: formData.offer_code
-        } : null,
-        CashbackOffer: formData.offer_type === 'CASHBACK' ? {
-          offer_id: offer?.offer_id || 0,
-          cashback_rate: formData.cashback_rate,
-          terms_conditions: formData.terms_conditions,
-          description: formData.offer_description,
-          image_url: formData.picture_url,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
-          status: formData.is_active
-        } : null,
-        LoyaltyOffer: formData.offer_type === 'LOYALTY' ? {
-          offer_id: offer?.offer_id || 0,
-          loyalty_points: formData.loyalty_points,
-          membership_requirement: formData.membership_requirement
-        } : null,
-        GiveawayOffer: null,
-        ChallengeOffer: null
+        terms_conditions: formData.terms_conditions
       };
 
-      console.log('Submitting offer data:', offerData);
+      // Prepare the specific offer type data
+      const offerData = (() => {
+        if (formData.offer_type === 'CASHBACK') {
+          const cashbackData = {
+            ...baseOfferData,
+            CashbackOffer: {
+              offer_id: offer?.offer_id || 0,
+              cashback_rate: formData.cashback_rate,
+              terms_conditions: formData.terms_conditions,
+              description: formData.offer_description,
+              image_url: formData.picture_url,
+              start_date: formData.start_date,
+              end_date: formData.end_date,
+              status: formData.is_active
+            },
+            DiscountOffer: null,
+            LoyaltyOffer: null,
+            GiveawayOffer: null,
+            ChallengeOffer: null
+          };
+          console.log('Submitting cashback data:', cashbackData); // Debug log
+          return cashbackData;
+        } else if (formData.offer_type === 'DISCOUNT') {
+          return {
+            ...baseOfferData,
+            DiscountOffer: {
+              offer_id: offer?.offer_id || 0,
+              discount_value: formData.discount_value,
+              discount_type: formData.discount_type,
+              offer_code: formData.offer_code
+            },
+            CashbackOffer: null,
+            LoyaltyOffer: null,
+            GiveawayOffer: null,
+            ChallengeOffer: null
+          };
+        } else {
+          return {
+            ...baseOfferData,
+            LoyaltyOffer: {
+              offer_id: offer?.offer_id || 0,
+              loyalty_points: formData.loyalty_points,
+              membership_requirement: formData.membership_requirement
+            },
+            CashbackOffer: null,
+            DiscountOffer: null,
+            GiveawayOffer: null,
+            ChallengeOffer: null
+          };
+        }
+      })();
 
       if (offer?.offer_id) {
         await offerService.update(offer.offer_id, offerData);
@@ -460,29 +490,25 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
           )}
 
           {formData.offer_type === 'CASHBACK' && (
-            <>
-              <div className="mb-4">
-                <label className="block mb-1">Cashback Rate</label>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Cashback Rate</label>
                 <input
                   type="text"
+                  name="cashback_rate"
                   value={formData.cashback_rate}
-                  onChange={e => setFormData({ ...formData, cashback_rate: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
-                  required
+                  onChange={(e) => {
+                    console.log('Cashback rate changed:', e.target.value);
+                    setFormData(prev => ({
+                      ...prev,
+                      cashback_rate: e.target.value
+                    }));
+                  }}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="e.g., 10%"
                 />
               </div>
-
-              <div className="mb-4">
-                <label className="block mb-1">Description</label>
-                <textarea
-                  value={formData.offer_description}
-                  onChange={e => setFormData({ ...formData, offer_description: e.target.value })}
-                  className="w-full border rounded px-3 py-2"
-                  rows={3}
-                  required
-                />
-              </div>
-            </>
+            </div>
           )}
 
           {formData.offer_type === 'LOYALTY' && (

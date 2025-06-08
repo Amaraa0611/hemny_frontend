@@ -74,24 +74,33 @@ export interface Organization {
   payment_option_2?: string;
 }
 
+export interface OrganizationLogo {
+  org_id?: number;
+  offer_type: 'ORIGINAL' | 'CASHBACK' | 'DISCOUNT';
+  format: string;
+  status: string;
+  url: string;
+}
+
 export interface CreateOrganizationData {
   org_name: string;
-  org_description: string;
-  website_url: string;
-  logo_url: string;
-  location: string;
-  contact_info: {
-    email: string;
-    phone: string;
-    address: string;
+  org_description?: string;
+  website_url?: string;
+  logo_url?: string;
+  location?: string;
+  contact_info?: {
+    email?: string;
+    phone?: string;
+    address?: string;
   };
-  brand_colors: {
+  brand_colors?: {
     primary: string;
     secondary: string;
     accent: string;
   };
-  categories: {
+  categories?: Array<{
     category_id: number;
     subcategory_id: number | null;
-  }[];
+  }>;
+  logos?: OrganizationLogo[];
 } 

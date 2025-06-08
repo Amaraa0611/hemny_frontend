@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Organization, CreateOrganizationData } from '@/types/organization';
+import { Organization, CreateOrganizationData, OrganizationLogo } from '@/types/organization';
 import { organizationService } from '@/services/organizationService';
 import { Category } from '@/types/category';
 import { categoryService } from '@/services/categoryService';
@@ -82,24 +82,24 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
     const { name, value } = e.target;
     if (name.startsWith('contact_')) {
       const field = name.replace('contact_', '');
-      setFormData((prev: CreateOrganizationData) => ({
+      setFormData(prev => ({
         ...prev,
         contact_info: {
-          ...prev.contact_info,
+          ...prev.contact_info!,
           [field]: value
         }
       }));
     } else if (name.startsWith('brand_')) {
       const field = name.replace('brand_', '');
-      setFormData((prev: CreateOrganizationData) => ({
+      setFormData(prev => ({
         ...prev,
         brand_colors: {
-          ...prev.brand_colors,
+          ...prev.brand_colors!,
           [field]: value
         }
       }));
     } else {
-      setFormData((prev: CreateOrganizationData) => ({
+      setFormData(prev => ({
         ...prev,
         [name]: value
       }));
@@ -115,7 +115,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
     };
 
     // Check if category already exists
-    const exists = formData.categories.some(
+    const exists = formData.categories?.some(
       cat => cat.category_id === newCategory.category_id && 
              cat.subcategory_id === newCategory.subcategory_id
     );
@@ -123,7 +123,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
     if (!exists) {
       setFormData(prev => ({
         ...prev,
-        categories: [...prev.categories, newCategory]
+        categories: [...(prev.categories || []), newCategory]
       }));
     }
 
@@ -133,9 +133,9 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
   };
 
   const handleRemoveCategory = (index: number) => {
-    setFormData((prev: CreateOrganizationData) => ({
+    setFormData(prev => ({
       ...prev,
-      categories: prev.categories.filter((_: unknown, i: number) => i !== index)
+      categories: prev.categories?.filter((_, i) => i !== index) || []
     }));
   };
 
@@ -148,15 +148,61 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
       console.log('Submitting form data:', formData);
       
       // Format categories for submission
-      const formattedCategories = formData.categories.map(cat => ({
+      const formattedCategories = formData.categories?.map(cat => ({
         category_id: cat.category_id,
         subcategory_id: cat.subcategory_id
-      }));
+      })) || [];
 
       const submissionData = {
         ...formData,
         categories: formattedCategories
       };
+
+      // Process logo URLs if a logo is provided
+      if (formData.logo_url) {
+        // Extract the base name from the original URL
+        const baseName = formData.logo_url.split('/').pop()?.replace(/\.[^/.]+$/, '') || '';
+        const orgName = baseName.replace('_original', ''); // Remove _original if present
+        
+        // Create the three logo URLs
+        const originalUrl = `/images/logo/merchant_logo/${orgName}_original.webp`;
+        const cashbackUrl = `/images/logo/merchant_logo/${orgName}_cashback.webp`;
+        const discountUrl = `/images/logo/merchant_logo/${orgName}_discount.webp`;
+
+        // Create logo records without org_id for new organizations
+        const logoRecords: OrganizationLogo[] = [
+          {
+            offer_type: 'ORIGINAL',
+            format: 'WEBP',
+            status: 'default',
+            url: originalUrl
+          },
+          {
+            offer_type: 'CASHBACK',
+            format: 'WEBP',
+            status: 'default',
+            url: cashbackUrl
+          },
+          {
+            offer_type: 'DISCOUNT',
+            format: 'WEBP',
+            status: 'default',
+            url: discountUrl
+          }
+        ];
+
+        // Add org_id only for existing organizations
+        if (organization?.org_id) {
+          logoRecords.forEach(logo => {
+            logo.org_id = organization.org_id;
+          });
+        }
+
+        // Add logo records to the submission data
+        submissionData.logos = logoRecords;
+        // Update the logo_url in submission data with the original logo URL
+        submissionData.logo_url = originalUrl;
+      }
 
       console.log('Formatted categories:', formattedCategories);
       console.log('Final submission data:', submissionData);
@@ -287,7 +333,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
               type="email"
               id="contact_email"
               name="contact_email"
-              value={formData.contact_info.email}
+              value={formData.contact_info?.email || ''}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
@@ -301,7 +347,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
               type="tel"
               id="contact_phone"
               name="contact_phone"
-              value={formData.contact_info.phone}
+              value={formData.contact_info?.phone || ''}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
@@ -315,7 +361,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
               type="text"
               id="contact_address"
               name="contact_address"
-              value={formData.contact_info.address}
+              value={formData.contact_info?.address || ''}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
@@ -332,7 +378,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
               type="color"
               id="brand_primary"
               name="brand_primary"
-              value={formData.brand_colors.primary}
+              value={formData.brand_colors?.primary || '#000000'}
               onChange={handleInputChange}
               className="mt-1 block w-full h-10 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
@@ -346,7 +392,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
               type="color"
               id="brand_secondary"
               name="brand_secondary"
-              value={formData.brand_colors.secondary}
+              value={formData.brand_colors?.secondary || '#FFFFFF'}
               onChange={handleInputChange}
               className="mt-1 block w-full h-10 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
@@ -360,7 +406,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
               type="color"
               id="brand_accent"
               name="brand_accent"
-              value={formData.brand_colors.accent}
+              value={formData.brand_colors?.accent || '#CCCCCC'}
               onChange={handleInputChange}
               className="mt-1 block w-full h-10 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
@@ -426,7 +472,7 @@ export const OrganizationForm: React.FC<OrganizationFormProps> = ({
             Add Category
           </button>
 
-          {formData.categories.length > 0 && (
+          {formData.categories && formData.categories.length > 0 && (
             <div className="mt-4">
               <h4 className="text-sm font-medium text-gray-700 mb-2">Selected Categories:</h4>
               <div className="space-y-2">

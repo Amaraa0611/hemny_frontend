@@ -1,4 +1,4 @@
-import { Organization } from '../types/organization';
+import { Organization, OrganizationLogo } from '../types/organization';
 import { BACKEND_URL } from './api';
 
 type CreateOrganizationData = {
@@ -21,6 +21,7 @@ type CreateOrganizationData = {
     category_id: number;
     subcategory_id: number | null;
   }>;
+  logos?: OrganizationLogo[];
 };
 
 export const organizationService = {
