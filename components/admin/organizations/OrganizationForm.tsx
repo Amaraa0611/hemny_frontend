@@ -1,68 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Category } from '../../../types/category';
-import { Organization } from '../../../types/organization';
-import { organizationService } from '../../../services/organizationService';
-import { categoryService } from '../../../services/categoryService';
-
-const isValidUrl = (url: string) => {
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-const isValidEmail = (email: string) => {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
-
-const isValidPhone = (phone: string) => {
-  return /^\+?[\d\s-]{8,}$/.test(phone);
-};
-
-interface OrganizedCategory extends Category {
-  subcategories: Category[];
-}
-
-interface OrganizationCategory {
-  category_id: number;
-  subcategory_id: number | null;
-}
+import { Organization, CreateOrganizationData } from '@/types/organization';
+import { organizationService } from '@/services/organizationService';
+import { Category } from '@/types/category';
 
 interface OrganizationFormProps {
   organization?: Organization;
-  onSubmit: () => void;
+  onSuccess: () => void;
 }
 
-interface FormData {
-  org_name: string;
-  org_description: string;
-  logo_url: string;
-  website_url: string;
-  location: string;
-  contact_info: {
-    email: string;
-    phone: string;
-    address: string;
-  };
-  brand_colors: {
-    primary: string;
-    secondary: string;
-    accent: string;
-  };
-  categories: Array<{
-    category_id: number;
-    subcategory_id: number | null;
-  }>;
-}
-
-const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSubmit }) => {
-  const [formData, setFormData] = useState<FormData>({
+export const OrganizationForm: React.FC<OrganizationFormProps> = ({
+  organization,
+  onSuccess
+}) => {
+  const [formData, setFormData] = useState<CreateOrganizationData>({
     org_name: '',
     org_description: '',
-    logo_url: '',
     website_url: '',
+    logo_url: '',
     location: '',
     contact_info: {
       email: '',
@@ -77,101 +31,74 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     categories: []
   });
 
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await organizationService.getAllCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   useEffect(() => {
     if (organization) {
       setFormData({
-        org_name: organization.org_name || '',
+        org_name: organization.org_name,
         org_description: organization.org_description || '',
-        logo_url: organization.logo_url || '',
         website_url: organization.website_url || '',
+        logo_url: organization.logo_url || '',
         location: organization.location || '',
-        contact_info: {
-          email: organization.contact_info?.email || '',
-          phone: organization.contact_info?.phone || '',
-          address: organization.contact_info?.address || ''
+        contact_info: organization.contact_info || {
+          email: '',
+          phone: '',
+          address: ''
         },
         brand_colors: organization.brand_colors || {
           primary: '#000000',
           secondary: '#FFFFFF',
           accent: '#000000'
         },
-        categories: organization.categories?.map(cat => ({
-          category_id: cat.id,
-          subcategory_id: cat.OrganizationCategory?.subcategory_id || null
-        })) || []
-      });
-
-      // Set initial category and subcategory if they exist
-      if (organization.categories?.[0]) {
-        setSelectedCategory(organization.categories[0].id);
-        setSelectedSubcategory(organization.categories[0].OrganizationCategory?.subcategory_id || null);
-      }
-    } else {
-      // Reset form data for new organization
-      setFormData({
-        org_name: '',
-        org_description: '',
-        logo_url: '',
-        website_url: '',
-        location: '',
-        contact_info: {
-          email: '',
-          phone: '',
-          address: ''
-        },
-        brand_colors: {
-          primary: '#000000',
-          secondary: '#FFFFFF',
-          accent: '#000000'
-        },
-        categories: []
+        categories: organization.categories || []
       });
     }
   }, [organization]);
 
-  useEffect(() => {
-    // Fetch categories
-    const fetchCategories = async () => {
-      try {
-        const data = await categoryService.getAll();
-        setCategories(data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        setError('Failed to load categories');
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  const getSubcategories = (categoryId: number) => {
-    return categories.filter(cat => cat.parent_id === categoryId);
-  };
-
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const categoryId = e.target.value ? Number(e.target.value) : null;
-    console.log('Category changed:', {
-      categoryId,
-      currentSelectedCategory: selectedCategory,
-      currentSelectedSubcategory: selectedSubcategory
-    });
-    setSelectedCategory(categoryId);
-    setSelectedSubcategory(null);
-  };
-
-  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const subcategoryId = e.target.value ? Number(e.target.value) : null;
-    console.log('Subcategory changed:', {
-      subcategoryId,
-      currentSelectedCategory: selectedCategory,
-      currentSelectedSubcategory: selectedSubcategory
-    });
-    setSelectedSubcategory(subcategoryId);
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name.startsWith('contact_')) {
+      const field = name.replace('contact_', '');
+      setFormData((prev: CreateOrganizationData) => ({
+        ...prev,
+        contact_info: {
+          ...prev.contact_info,
+          [field]: value
+        }
+      }));
+    } else if (name.startsWith('brand_')) {
+      const field = name.replace('brand_', '');
+      setFormData((prev: CreateOrganizationData) => ({
+        ...prev,
+        brand_colors: {
+          ...prev.brand_colors,
+          [field]: value
+        }
+      }));
+    } else {
+      setFormData((prev: CreateOrganizationData) => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
   const handleAddCategory = () => {
@@ -193,10 +120,11 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     };
     console.log('Attempting to add new category:', newCategory);
     
-    setFormData(prev => {
+    setFormData((prev: CreateOrganizationData) => {
       // Check if category already exists
       const categoryExists = prev.categories.some(
-        cat => cat.category_id === selectedCategory && cat.subcategory_id === selectedSubcategory
+        (cat: { category_id: number; subcategory_id: number | null }) => 
+          cat.category_id === selectedCategory && cat.subcategory_id === selectedSubcategory
       );
       
       console.log('Category exists check:', {
@@ -227,63 +155,36 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     setSelectedSubcategory(null);
   };
 
-  const handleRemoveCategory = async (index: number) => {
-    const categoryToRemove = formData.categories[index];
-    
-    try {
-      if (organization?.org_id) {
-        // For existing organization, remove category immediately
-        await organizationService.deleteCategoryCombination(
-          organization.org_id,
-          categoryToRemove.category_id,
-          categoryToRemove.subcategory_id || undefined
-        );
-      }
-
-      setFormData(prev => {
-        const newCategories = prev.categories.filter((_, i) => i !== index);
-        return {
-          ...prev,
-          categories: newCategories
-        };
-      });
-    } catch (error) {
-      console.error('Error removing category:', error);
-      setError(error instanceof Error ? error.message : 'Failed to remove category');
-    }
+  const handleRemoveCategory = (index: number) => {
+    setFormData((prev: CreateOrganizationData) => ({
+      ...prev,
+      categories: prev.categories.filter((_: unknown, i: number) => i !== index)
+    }));
   };
 
-  const validateForm = () => {
-    const newErrors: {
-      org_name?: string;
-      logo_url?: string;
-      website_url?: string;
-      email?: string;
-      phone?: string;
-    } = {};
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const categoryId = e.target.value ? Number(e.target.value) : null;
+    console.log('Category changed:', {
+      categoryId,
+      currentSelectedCategory: selectedCategory,
+      currentSelectedSubcategory: selectedSubcategory
+    });
+    setSelectedCategory(categoryId);
+    setSelectedSubcategory(null);
+  };
 
-    if (!formData.org_name.trim()) {
-      newErrors.org_name = 'Organization name is required';
-    }
+  const handleSubcategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const subcategoryId = e.target.value ? Number(e.target.value) : null;
+    console.log('Subcategory changed:', {
+      subcategoryId,
+      currentSelectedCategory: selectedCategory,
+      currentSelectedSubcategory: selectedSubcategory
+    });
+    setSelectedSubcategory(subcategoryId);
+  };
 
-    if (formData.website_url && !isValidUrl(formData.website_url)) {
-      newErrors.website_url = 'Invalid website URL';
-    }
-
-    if (formData.contact_info.email && !isValidEmail(formData.contact_info.email)) {
-      newErrors.email = 'Invalid email address';
-    }
-
-    if (formData.contact_info.phone && !isValidPhone(formData.contact_info.phone)) {
-      newErrors.phone = 'Invalid phone number';
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setError(Object.values(newErrors).join(', '));
-      return false;
-    }
-
-    return true;
+  const getSubcategories = (categoryId: number) => {
+    return categories.filter(cat => cat.parent_id === categoryId);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -298,7 +199,7 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
     }
 
     try {
-      setIsSubmitting(true);
+      setLoading(true);
       setError(null);
       console.log('Preparing submission data...');
       
@@ -348,12 +249,12 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
         }
       }
       console.log('Operation completed successfully');
-      onSubmit();
+      onSuccess();
     } catch (err) {
       console.error('Error during submission:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -371,243 +272,254 @@ const OrganizationForm: React.FC<OrganizationFormProps> = ({ organization, onSub
   }, [selectedCategory, selectedSubcategory]);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg w-full max-w-xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">
-            {organization ? 'Edit Organization' : 'Create New Organization'}
-          </h2>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="org_name" className="block text-sm font-medium text-gray-700">
+            Organization Name *
+          </label>
+          <input
+            type="text"
+            id="org_name"
+            name="org_name"
+            value={formData.org_name}
+            onChange={handleInputChange}
+            required
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
         </div>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+        <div>
+          <label htmlFor="org_description" className="block text-sm font-medium text-gray-700">
+            Description
+          </label>
+          <textarea
+            id="org_description"
+            name="org_description"
+            value={formData.org_description}
+            onChange={handleInputChange}
+            rows={3}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="website_url" className="block text-sm font-medium text-gray-700">
+            Website URL
+          </label>
+          <input
+            type="url"
+            id="website_url"
+            name="website_url"
+            value={formData.website_url}
+            onChange={handleInputChange}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="logo_url" className="block text-sm font-medium text-gray-700">
+            Logo URL
+          </label>
+          <input
+            type="text"
+            id="logo_url"
+            name="logo_url"
+            value={formData.logo_url}
+            onChange={handleInputChange}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+            Location
+          </label>
+          <input
+            type="text"
+            id="location"
+            name="location"
+            value={formData.location}
+            onChange={handleInputChange}
+            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Contact Information</h3>
           <div>
-            <label className="block mb-1">Organization Name *</label>
+            <label htmlFor="contact_email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              type="email"
+              id="contact_email"
+              name="contact_email"
+              value={formData.contact_info.email}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="contact_phone" className="block text-sm font-medium text-gray-700">
+              Phone
+            </label>
+            <input
+              type="tel"
+              id="contact_phone"
+              name="contact_phone"
+              value={formData.contact_info.phone}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="contact_address" className="block text-sm font-medium text-gray-700">
+              Address
+            </label>
             <input
               type="text"
-              value={formData.org_name}
-              onChange={e => setFormData(prev => ({ ...prev, org_name: e.target.value }))}
-              className="w-full border rounded px-3 py-2"
-              required
+              id="contact_address"
+              name="contact_address"
+              value={formData.contact_info.address}
+              onChange={handleInputChange}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
+        </div>
 
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Brand Colors</h3>
           <div>
-            <label className="block mb-1">Description</label>
-            <textarea
-              value={formData.org_description}
-              onChange={e => setFormData(prev => ({ ...prev, org_description: e.target.value }))}
-              className="w-full border rounded px-3 py-2"
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1">Logo URL</label>
+            <label htmlFor="brand_primary" className="block text-sm font-medium text-gray-700">
+              Primary Color
+            </label>
             <input
-              type="text"
-              value={formData.logo_url}
-              onChange={e => setFormData(prev => ({ ...prev, logo_url: e.target.value }))}
-              className="w-full border rounded px-3 py-2"
-              placeholder="https://example.com/logo.png"
+              type="color"
+              id="brand_primary"
+              name="brand_primary"
+              value={formData.brand_colors.primary}
+              onChange={handleInputChange}
+              className="mt-1 block w-full h-10 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block mb-1">Website URL</label>
+            <label htmlFor="brand_secondary" className="block text-sm font-medium text-gray-700">
+              Secondary Color
+            </label>
             <input
-              type="text"
-              value={formData.website_url}
-              onChange={e => setFormData(prev => ({ ...prev, website_url: e.target.value }))}
-              className="w-full border rounded px-3 py-2"
-              placeholder="https://example.com"
+              type="color"
+              id="brand_secondary"
+              name="brand_secondary"
+              value={formData.brand_colors.secondary}
+              onChange={handleInputChange}
+              className="mt-1 block w-full h-10 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
           <div>
-            <label className="block mb-1">Location</label>
+            <label htmlFor="brand_accent" className="block text-sm font-medium text-gray-700">
+              Accent Color
+            </label>
             <input
-              type="text"
-              value={formData.location}
-              onChange={e => setFormData(prev => ({ ...prev, location: e.target.value }))}
-              className="w-full border rounded px-3 py-2"
+              type="color"
+              id="brand_accent"
+              name="brand_accent"
+              value={formData.brand_colors.accent}
+              onChange={handleInputChange}
+              className="mt-1 block w-full h-10 rounded-md border border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
+        </div>
 
-          <div>
-            <label className="block mb-1">Contact Information</label>
-            <div className="space-y-2">
-              <input
-                type="email"
-                value={formData.contact_info.email}
-                onChange={e => setFormData(prev => ({
-                  ...prev,
-                  contact_info: { ...prev.contact_info, email: e.target.value }
-                }))}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Email"
-              />
-              <input
-                type="tel"
-                value={formData.contact_info.phone}
-                onChange={e => setFormData(prev => ({
-                  ...prev,
-                  contact_info: { ...prev.contact_info, phone: e.target.value }
-                }))}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Phone"
-              />
-              <textarea
-                value={formData.contact_info.address}
-                onChange={e => setFormData(prev => ({
-                  ...prev,
-                  contact_info: { ...prev.contact_info, address: e.target.value }
-                }))}
-                className="w-full border rounded px-3 py-2"
-                placeholder="Address"
-                rows={2}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block mb-1">Brand Colors</label>
-            <div className="grid grid-cols-3 gap-2">
-              <div>
-                <label className="block text-sm">Primary</label>
-                <input
-                  type="color"
-                  value={formData.brand_colors.primary}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    brand_colors: { ...prev.brand_colors, primary: e.target.value }
-                  }))}
-                  className="w-full h-10"
-                />
-              </div>
-              <div>
-                <label className="block text-sm">Secondary</label>
-                <input
-                  type="color"
-                  value={formData.brand_colors.secondary}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    brand_colors: { ...prev.brand_colors, secondary: e.target.value }
-                  }))}
-                  className="w-full h-10"
-                />
-              </div>
-              <div>
-                <label className="block text-sm">Accent</label>
-                <input
-                  type="color"
-                  value={formData.brand_colors.accent}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    brand_colors: { ...prev.brand_colors, accent: e.target.value }
-                  }))}
-                  className="w-full h-10"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Categories</h3>
-            <div className="flex gap-4">
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Categories</h3>
+          <div className="flex gap-4">
+            <select
+              value={selectedCategory || ''}
+              onChange={handleCategoryChange}
+              className="flex-1 rounded-md border border-gray-300 p-2"
+            >
+              <option value="">Select Category</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name_en}
+                </option>
+              ))}
+            </select>
+            
+            {selectedCategory && (
               <select
-                value={selectedCategory || ''}
-                onChange={handleCategoryChange}
+                value={selectedSubcategory || ''}
+                onChange={handleSubcategoryChange}
                 className="flex-1 rounded-md border border-gray-300 p-2"
               >
-                <option value="">Select Category</option>
-                {categories.map(category => (
-                  <option key={category.id} value={category.id}>
-                    {category.name_en}
+                <option value="">Select Subcategory</option>
+                {getSubcategories(selectedCategory).map(sub => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name_en}
                   </option>
                 ))}
               </select>
-              
-              {selectedCategory && (
-                <select
-                  value={selectedSubcategory || ''}
-                  onChange={handleSubcategoryChange}
-                  className="flex-1 rounded-md border border-gray-300 p-2"
-                >
-                  <option value="">Select Subcategory</option>
-                  {getSubcategories(selectedCategory).map(sub => (
-                    <option key={sub.id} value={sub.id}>
-                      {sub.name_en}
-                    </option>
-                  ))}
-                </select>
-              )}
-              
-              <button
-                type="button"
-                onClick={handleAddCategory}
-                disabled={!selectedCategory}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
-              >
-                Add Category
-              </button>
-            </div>
+            )}
             
-            {/* Display selected categories */}
-            <div className="mt-4">
-              <h4 className="font-medium mb-2">Selected Categories:</h4>
-              <div className="space-y-2">
-                {formData.categories.map((cat, index) => {
-                  const category = categories.find(c => c.id === cat.category_id);
-                  const subcategory = cat.subcategory_id 
-                    ? getSubcategories(cat.category_id).find(s => s.id === cat.subcategory_id)
-                    : null;
-                  
-                  return (
-                    <div key={index} className="flex items-center gap-2">
-                      <span>{category?.name_en}</span>
-                      {subcategory && <span>- {subcategory.name_en}</span>}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveCategory(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 mt-6">
             <button
               type="button"
-              onClick={onSubmit}
-              className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+              onClick={handleAddCategory}
+              disabled={!selectedCategory}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className={`bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded ${
-                isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              {isSubmitting ? 'Saving...' : 'Save'}
+              Add Category
             </button>
           </div>
-        </form>
+          
+          {/* Display selected categories */}
+          <div className="mt-4">
+            <h4 className="font-medium mb-2">Selected Categories:</h4>
+            <div className="space-y-2">
+              {formData.categories.map((cat, index) => {
+                const category = categories.find(c => c.id === cat.category_id);
+                const subcategory = cat.subcategory_id 
+                  ? getSubcategories(cat.category_id).find(s => s.id === cat.subcategory_id)
+                  : null;
+                
+                return (
+                  <div key={index} className="flex items-center gap-2">
+                    <span>{category?.name_en}</span>
+                    {subcategory && <span>- {subcategory.name_en}</span>}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCategory(index)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  );
-};
 
-export default OrganizationForm; 
+      {error && (
+        <div className="text-red-500 text-sm mt-2">
+          {error}
+        </div>
+      )}
+
+      <div className="flex justify-end">
+        <button
+          type="submit"
+          disabled={loading}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
+        >
+          {loading ? 'Saving...' : organization ? 'Update Organization' : 'Create Organization'}
+        </button>
+      </div>
+    </form>
+  );
+}; 

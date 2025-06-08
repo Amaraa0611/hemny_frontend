@@ -20,9 +20,9 @@ export interface Organization {
   logo_url?: string;
   location?: string;
   contact_info?: {
-    email?: string;
-    phone?: string;
-    address?: string;
+    email: string;
+    phone: string;
+    address: string;
   };
   brand_colors?: {
     primary: string;
@@ -31,7 +31,10 @@ export interface Organization {
   };
   created_at?: string;
   updated_at?: string;
-  categories?: Category[];
+  categories?: Array<{
+    category_id: number;
+    subcategory_id: number | null;
+  }>;
   logos?: Array<{
     id: number;
     url: string;
@@ -50,4 +53,26 @@ export interface Organization {
   end_date?: string;
   payment_option?: string;
   payment_option_2?: string;
+}
+
+export interface CreateOrganizationData {
+  org_name: string;
+  org_description?: string;
+  website_url?: string;
+  logo_url?: string;
+  location?: string;
+  contact_info: {
+    email: string;
+    phone: string;
+    address: string;
+  };
+  brand_colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+  };
+  categories: Array<{
+    category_id: number;
+    subcategory_id: number | null;
+  }>;
 } 
