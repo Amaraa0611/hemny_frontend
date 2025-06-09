@@ -53,7 +53,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
     payment_option_2: offer?.payment_option_2 || '',
     source_link: offer?.source_link || '',
     terms_conditions: offer?.terms_conditions || '',
-    discount_value: offer?.DiscountOffer?.discount_value || '0',
+    discount_value: offer?.DiscountOffer?.discount_value || '',
     discount_type: offer?.DiscountOffer?.discount_type || 'Percentage',
     offer_code: offer?.DiscountOffer?.offer_code || '',
     cashback_rate: offer?.CashbackOffer?.cashback_rate || '',

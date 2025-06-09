@@ -112,7 +112,7 @@ const Header = () => {
 
           {/* Facebook Icon */}
           <div className="flex items-center">
-            <a href="https://facebook.com/hemny" 
+            <a href="https://www.facebook.com/profile.php?id=61575261267249" 
                target="_blank" 
                rel="noopener noreferrer"
                className="text-gray-600 hover:text-primary transition-colors"
