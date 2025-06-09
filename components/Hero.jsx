@@ -76,7 +76,7 @@
                 <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
                 <span className="inline-block">Таны дуртай байгууллагуудын зарласан</span>{' '}
                 <span className="font-semibold text-gray-900 inline-block">хямдрал, лояалти,</span>{' '}
-                <span className="font-semibold text-gray-900 inline-block">cashback, хөнглөлтийн</span>{' '}
+                <span className="font-semibold text-gray-900 inline-block">cashback, хөнгөлөлтийн</span>{' '}
                 <span className="inline-block">мэдээллийг бүгдийг нэг доороос.</span>
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-6 sm:pt-8">
