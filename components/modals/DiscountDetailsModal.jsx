@@ -33,13 +33,51 @@ const DiscountDetailsModal = ({
     }
   };
 
+  // Responsive modal animation classes
+  const modalAnimation = `
+    transition-all duration-300 ease-out
+    sm:scale-100 sm:opacity-100 sm:translate-y-0
+    scale-90 opacity-0 translate-y-8
+    animate-modal-open
+  `;
+  // For mobile, full screen, no border radius/margin
+  const modalContainer = `
+    bg-white
+    w-full
+    max-w-2xl
+    max-h-[90vh]
+    overflow-y-auto
+    mx-2 sm:mx-4
+    rounded-lg
+    sm:rounded-lg
+    ${isOpen ? 'sm:animate-modal-open' : ''}
+    ${isOpen ? 'animate-mobile-modal-open' : ''}
+    sm:p-0
+    p-0
+  `;
+
   return (
     <div 
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/50 transition-colors"
       onClick={handleOverlayClick}
     >
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-2 sm:mx-4">
-        <div className="p-4 sm:p-6">
+      <div
+        className={
+          `relative bg-white shadow-xl ` +
+          // On mobile: full screen, no border radius/margin, slide up
+          'w-full h-full m-0 rounded-none sm:h-auto sm:rounded-lg sm:m-0 ' +
+          // Animation
+          (isOpen
+            ? 'opacity-100 scale-100 translate-y-0 sm:animate-modal-open animate-mobile-modal-open'
+            : 'opacity-0 scale-75 translate-y-12') +
+          ' transition-all duration-500 ease-out'
+        }
+        style={{
+          maxWidth: '52rem', // wider for desktop
+          maxHeight: '95vh', // taller for desktop
+        }}
+      >
+        <div className="p-4 sm:p-6 h-full w-full flex flex-col max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
           {/* Header with Organization Logo */}
           <div className="flex justify-between items-start mb-4">
             <div className="pr-8 flex-1">
@@ -57,8 +95,8 @@ const DiscountDetailsModal = ({
             </button>
           </div>
 
-          {/* Content */}
-          <div className="space-y-4 sm:space-y-6">
+          {/* Content (text fields above, image at the bottom) */}
+          <div className="flex flex-col flex-1 space-y-4 sm:space-y-6">
             {/* Discount Value */}
             <div>
               <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Хямдралын хэмжээ</h3>
@@ -73,22 +111,6 @@ const DiscountDetailsModal = ({
                 {offer_description}
               </p>
             </div>
-
-            {/* Offer Image */}
-            {picture_url && (
-              <div className="transition-all duration-300 ease-in-out transform hover:scale-[1.02]">
-                <img
-                  src={getImagePath(picture_url)}
-                  alt={offer_title}
-                  className="w-full h-auto rounded-lg shadow-lg object-contain animate-fade-in"
-                  style={{ maxHeight: '300px', minHeight: '150px' }}
-                  onError={(e) => {
-                    console.error('Image failed to load:', e.target.src);
-                    e.target.src = '/images/default-logo.png';
-                  }}
-                />
-              </div>
-            )}
 
             {/* Offer Period */}
             <div>
@@ -107,17 +129,57 @@ const DiscountDetailsModal = ({
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-4 sm:mt-6 flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm sm:text-base transition-colors"
-            >
-              Хаах
-            </button>
-          </div>
+          {/* Offer Image at the bottom */}
+          {picture_url && (
+            <div className="mt-6 transition-all duration-300 ease-in-out transform hover:scale-[1.02]">
+              <img
+                src={getImagePath(picture_url)}
+                alt={offer_title}
+                className="w-full h-auto rounded-lg shadow-lg object-contain animate-fade-in"
+                style={{ maxHeight: '300px', minHeight: '150px' }}
+                onError={(e) => {
+                  console.error('Image failed to load:', e.target.src);
+                  e.target.src = '/images/default-logo.png';
+                }}
+              />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Animations */}
+      <style jsx global>{`
+        @media (max-width: 639px) {
+          .animate-mobile-modal-open {
+            animation: mobileModalOpen 0.45s cubic-bezier(0.4,0,0.2,1);
+          }
+          @keyframes mobileModalOpen {
+            0% {
+              opacity: 0;
+              transform: translateY(100%);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+        }
+        @media (min-width: 640px) {
+          .animate-modal-open {
+            animation: modalOpen 0.38s cubic-bezier(0.4,0,0.2,1);
+          }
+          @keyframes modalOpen {
+            0% {
+              opacity: 0;
+              transform: scale(0.7);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
+        }
+      `}</style>
     </div>
   );
 };

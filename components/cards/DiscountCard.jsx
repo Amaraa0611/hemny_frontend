@@ -34,14 +34,11 @@ const DiscountCard = (props) => {
     return `${date.getFullYear()} оны ${monthsInMongolian[date.getMonth()]} ${date.getDate()}`;
   };
 
-  // Extract discount range
-  const getDiscountRange = (discountValue) => {
+  // Extract discount value and format with 'хямдрал'
+  const getDiscountText = (discountValue) => {
     if (!discountValue) return '';
-    if (discountValue.includes('-')) {
-      const [min, max] = discountValue.split('-');
-      return `${min}%-${max}%`;
-    }
-    return `${discountValue}%`;
+    // Remove any dash/old logic, just show the value + ' хямдрал'
+    return `${discountValue}% хямдрал`;
   };
 
   const handleOpenModal = (e) => {
@@ -60,13 +57,13 @@ const DiscountCard = (props) => {
     <>
       <div 
         onClick={handleOpenModal}
-        className="bg-white rounded-lg shadow-md flex h-24 overflow-hidden hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm"
+        className="bg-white rounded-xl shadow-md flex items-center p-6 gap-6 w-full hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm"
       >
-        <div className="w-24 h-24 flex items-center justify-center p-2">
+        <div className="flex-shrink-0 flex items-center justify-center h-16 w-24">
           <img 
             src={getLogo()}
             alt={props.Organization?.org_name}
-            className="max-w-full max-h-full w-auto h-auto object-contain"
+            className="h-full w-full object-contain"
             loading="lazy"
             onError={(e) => {
               console.error(`Failed to load logo: ${getLogo()}`);
@@ -74,35 +71,22 @@ const DiscountCard = (props) => {
             }}
           />
         </div>
-        <div className="flex items-center gap-3 p-3 flex-1">
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-gray-900 font-sans leading-tight line-clamp-2 mb-1">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col">
+            <span className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-1">
               {props.offer_title}
-            </h3>
-            <p className="text-base font-semibold text-primary leading-tight">
-              {getDiscountRange(props.DiscountOffer?.discount_value)}
-            </p>
-          </div>
-          <div className="flex items-center pointer-events-none">
-            <span 
-              className="text-primary font-medium text-sm group-hover:text-primary/80 transition-colors flex items-center gap-0.5 group bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md"
-            >
-              Үзэх
-              <svg 
-                className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2.5} 
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
+            </span>
+            <span className="text-purple-600 font-semibold text-base mt-1">
+              {getDiscountText(props.DiscountOffer?.discount_value)}
             </span>
           </div>
+        </div>
+        <div className="flex-shrink-0">
+          <span 
+            className="bg-white text-purple-600 font-semibold rounded-full px-6 py-2 shadow hover:shadow-md transition select-none pointer-events-none"
+          >
+            Үзэх
+          </span>
         </div>
       </div>
 
