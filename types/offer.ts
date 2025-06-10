@@ -34,7 +34,7 @@ export interface BaseOffer {
 }
 
 export interface DiscountOffer {
-  offer_id: number;
+  offer_id?: number;
   discount_value: string;
   discount_type: string;
   offer_code: string;

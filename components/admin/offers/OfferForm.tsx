@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Offer, OfferType } from '../../../types/offer';
+import { Offer, OfferType, DiscountOffer } from '../../../types/offer';
 import { Organization } from '../../../types/organization';
 import { offerService } from '../../../services/offerService';
 import { organizationService } from '../../../services/organizationService';
@@ -248,20 +248,29 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
           console.log('Submitting cashback data:', cashbackData); // Debug log
           return cashbackData;
         } else if (formData.offer_type === 'DISCOUNT') {
-          return {
+          const discountOffer: DiscountOffer = {
+            discount_value: formData.discount_value,
+            discount_type: formData.discount_type,
+            offer_code: formData.offer_code,
+            terms_conditions: formData.terms_conditions
+          };
+
+          // Only add offer_id if it's an existing offer
+          if (offer?.offer_id) {
+            discountOffer.offer_id = offer.offer_id;
+          }
+
+          const offerData = {
             ...baseOfferData,
-            DiscountOffer: {
-              offer_id: offer?.offer_id || 0,
-              discount_value: formData.discount_value,
-              discount_type: formData.discount_type,
-              offer_code: formData.offer_code,
-              terms_conditions: formData.terms_conditions
-            },
+            DiscountOffer: discountOffer,
             CashbackOffer: null,
             LoyaltyOffer: null,
             GiveawayOffer: null,
             ChallengeOffer: null
           };
+
+          console.log('Submitting discount data:', offerData); // Debug log
+          return offerData;
         } else {
           return {
             ...baseOfferData,
@@ -357,6 +366,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               value={formData.offer_title}
               onChange={e => setFormData({ ...formData, offer_title: e.target.value })}
               className="w-full border rounded px-3 py-2"
+              placeholder="e.g., Summer Sale 2024"
               required
             />
           </div>
@@ -368,6 +378,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               onChange={e => setFormData({ ...formData, offer_description: e.target.value })}
               className="w-full border rounded px-3 py-2"
               rows={3}
+              placeholder="e.g., Get amazing discounts on all summer items. Limited time offer!"
               required
             />
           </div>
@@ -401,7 +412,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               value={formData.picture_url}
               onChange={e => setFormData({ ...formData, picture_url: e.target.value })}
               className="w-full border rounded px-3 py-2"
-              placeholder="/images/offers/example.png"
+              placeholder="/images/offers/summer-sale-2024.jpg"
             />
             <p className="text-sm text-gray-500 mt-1">
               Enter the path to the offer image (e.g., /images/offers/example.png)
@@ -429,6 +440,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               value={formData.payment_option}
               onChange={e => setFormData({ ...formData, payment_option: e.target.value })}
               className="w-full border rounded px-3 py-2"
+              placeholder="e.g., Credit Card, Bank Transfer"
             />
           </div>
 
@@ -439,6 +451,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               value={formData.payment_option_2}
               onChange={e => setFormData({ ...formData, payment_option_2: e.target.value })}
               className="w-full border rounded px-3 py-2"
+              placeholder="e.g., Mobile Payment, Cash"
             />
           </div>
 
@@ -449,6 +462,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               onChange={e => setFormData({ ...formData, terms_conditions: e.target.value })}
               className="w-full border rounded px-3 py-2"
               rows={3}
+              placeholder="e.g., 1. Offer valid until end date. 2. Cannot be combined with other offers. 3. Limited to one per customer."
               required
             />
           </div>
@@ -462,11 +476,10 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                   value={formData.discount_value}
                   onChange={e => setFormData({ ...formData, discount_value: e.target.value })}
                   className="w-full border rounded px-3 py-2"
-                  placeholder="e.g., 10% or $10"
+                  placeholder="e.g., 20% or 50-70"
                   required
                 />
               </div>
-
               <div className="mb-4">
                 <label className="block mb-1">Discount Type</label>
                 <select
@@ -477,9 +490,9 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                 >
                   <option value="Percentage">Percentage</option>
                   <option value="Fixed">Fixed Amount</option>
+                  <option value="Range">Range</option>
                 </select>
               </div>
-
               <div className="mb-4">
                 <label className="block mb-1">Offer Code</label>
                 <input
@@ -487,6 +500,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                   value={formData.offer_code}
                   onChange={e => setFormData({ ...formData, offer_code: e.target.value })}
                   className="w-full border rounded px-3 py-2"
+                  placeholder="e.g., SUMMER2024"
                   required
                 />
               </div>
@@ -500,15 +514,9 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                 type="text"
                 name="cashback_rate"
                 value={formData.cashback_rate}
-                onChange={(e) => {
-                  console.log('Cashback rate changed:', e.target.value);
-                  setFormData(prev => ({
-                    ...prev,
-                    cashback_rate: e.target.value
-                  }));
-                }}
+                onChange={e => setFormData({ ...formData, cashback_rate: e.target.value })}
                 className="w-full border rounded px-3 py-2"
-                placeholder="e.g., 10%"
+                placeholder="e.g., 5% or 1000₮"
                 required
               />
             </div>
@@ -524,6 +532,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                   value={formData.loyalty_points}
                   onChange={e => setFormData({ ...formData, loyalty_points: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="e.g., 100 points"
                 />
               </div>
               <div className="mb-4">
@@ -534,6 +543,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                   value={formData.membership_requirement}
                   onChange={e => setFormData({ ...formData, membership_requirement: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  placeholder="e.g., Gold Member or 6 months membership"
                 />
               </div>
             </>
