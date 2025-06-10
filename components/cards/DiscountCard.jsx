@@ -76,21 +76,18 @@ const DiscountCard = (props) => {
         </div>
         <div className="flex items-center gap-3 p-3 flex-1">
           <div className="flex-1">
-            <h3 className="text-lg font-bold text-gray-900 font-sans leading-tight line-clamp-1">
-              {props.Organization?.org_name}
+            <h3 className="text-xl font-bold text-gray-900 font-sans leading-tight line-clamp-2 mb-1">
+              {props.offer_title}
             </h3>
-            <p className="text-base font-semibold text-gray-700 leading-tight mt-0.5">
-              {getDiscountRange(props.DiscountOffer?.discount_value)} Off
-            </p>
-            <p className="text-sm font-medium text-gray-600 leading-tight mt-0.5">
-              {formatDate(props.end_date)} хүртэл
+            <p className="text-base font-semibold text-primary leading-tight">
+              {getDiscountRange(props.DiscountOffer?.discount_value)}
             </p>
           </div>
           <div className="flex items-center pointer-events-none">
             <span 
-              className="text-blue-600 font-medium text-sm group-hover:text-blue-800 transition-colors flex items-center gap-0.5 group"
+              className="text-primary font-medium text-sm group-hover:text-primary/80 transition-colors flex items-center gap-0.5 group bg-white px-4 py-2 rounded-full shadow-sm hover:shadow-md"
             >
-              Дэлгэрэнгүй
+              Үзэх
               <svg 
                 className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 transition-transform"
                 fill="none" 

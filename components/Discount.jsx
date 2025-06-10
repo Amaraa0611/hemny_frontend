@@ -61,9 +61,9 @@ const Discount = () => {
     );
   }
 
-  // Only show first 4 stores
-  const visibleStores = stores?.slice(0, 4) ?? [];
-  const hasMoreStores = (stores?.length ?? 0) > 4;
+  // Only show first 8 stores
+  const visibleStores = stores?.slice(0, 8) ?? [];
+  const hasMoreStores = (stores?.length ?? 0) > 8;
 
   return (
     <section className="py-12 bg-gray-50">
