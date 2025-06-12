@@ -71,7 +71,7 @@ const DiscountCard = (props) => {
             }}
           />
         </div>
-        <div className="flex-1 min-w-0 pr-16 sm:pr-0">
+        <div className="flex-1 min-w-0 pr-20 sm:pr-0">
           <div className="flex flex-col">
             <span className="text-base sm:text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-0.5">
               {props.offer_title}
@@ -83,7 +83,7 @@ const DiscountCard = (props) => {
         </div>
         <div className="absolute bottom-0 right-0 translate-y-1/2 sm:translate-y-0 sm:relative sm:flex-shrink-0 sm:flex sm:items-center">
           <span 
-            className="bg-white text-purple-600 font-semibold rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base shadow hover:shadow-md transition select-none pointer-events-none"
+            className="bg-white text-purple-600 font-semibold rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base shadow hover:shadow-md transition select-none pointer-events-none"
           >
             Үзэх
           </span>

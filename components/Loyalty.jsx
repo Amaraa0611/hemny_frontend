@@ -122,11 +122,11 @@ const Loyalty = () => {
         >
           <div className="overflow-hidden relative px-4">
             <div 
-              className="flex transition-transform duration-500 ease-out gap-8"
-              style={{ transform: `translateX(-${currentSlide * (100 / 4 + 2)}%)` }}
+              className="flex transition-transform duration-500 ease-out gap-4 sm:gap-8"
+              style={{ transform: `translateX(-${currentSlide * (100 / (window.innerWidth < 640 ? 2 : 4) + 2)}%)` }}
             >
               {safeStores.map((store) => (
-                <div key={store.offer_id} className="flex-none w-1/4">
+                <div key={store.offer_id} className="flex-none w-1/2 sm:w-1/4">
                   <LoyaltyCard
                     image={store.picture_url}
                     title={store.offer_title}
