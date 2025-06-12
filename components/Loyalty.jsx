@@ -119,14 +119,29 @@ const Loyalty = () => {
           className="relative max-w-[1600px] mx-auto"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
+          style={{
+            '--card-width': 'calc(50% - 0.5rem)',
+            '--card-gap': '0.5rem',
+            '@media (min-width: 640px)': {
+              '--card-width': 'calc(25% - 1.5rem)',
+              '--card-gap': '2rem'
+            }
+          }}
         >
           <div className="overflow-hidden relative px-2 sm:px-4">
             <div 
-              className="flex transition-transform duration-500 ease-out gap-2 sm:gap-8"
-              style={{ transform: `translateX(-${currentSlide * (window.innerWidth < 640 ? 50 : 25)}%)` }}
+              className="flex transition-transform duration-500 ease-out"
+              style={{ 
+                gap: 'var(--card-gap)',
+                transform: `translateX(-${currentSlide * (window.innerWidth < 640 ? 50 : 25)}%)` 
+              }}
             >
               {safeStores.map((store) => (
-                <div key={store.offer_id} className="flex-none w-[calc(50%-4px)] sm:w-1/4">
+                <div 
+                  key={store.offer_id} 
+                  className="flex-none"
+                  style={{ width: 'var(--card-width)' }}
+                >
                   <LoyaltyCard
                     image={store.picture_url}
                     title={store.offer_title}
