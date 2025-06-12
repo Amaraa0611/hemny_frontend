@@ -57,9 +57,9 @@ const DiscountCard = (props) => {
     <>
       <div 
         onClick={handleOpenModal}
-        className="bg-white rounded-xl shadow-md flex items-center p-6 gap-6 w-full hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm"
+        className="bg-white rounded-xl shadow-md flex items-center p-4 sm:p-5 gap-4 sm:gap-6 w-full hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm relative"
       >
-        <div className="flex-shrink-0 flex items-center justify-center h-16 w-24">
+        <div className="flex-shrink-0 flex items-center justify-center h-14 w-20 sm:h-16 sm:w-24">
           <img 
             src={getLogo()}
             alt={props.Organization?.org_name}
@@ -71,19 +71,19 @@ const DiscountCard = (props) => {
             }}
           />
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-16 sm:pr-0">
           <div className="flex flex-col">
-            <span className="text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-1">
+            <span className="text-base sm:text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-0.5">
               {props.offer_title}
             </span>
-            <span className="text-purple-600 font-semibold text-base mt-1">
+            <span className="text-purple-600 font-semibold text-sm sm:text-base mt-0.5">
               {getDiscountText(props.DiscountOffer?.discount_value)}
             </span>
           </div>
         </div>
-        <div className="flex-shrink-0">
+        <div className="absolute bottom-0 right-0 translate-y-1/2 sm:translate-y-0 sm:relative sm:flex-shrink-0 sm:flex sm:items-center">
           <span 
-            className="bg-white text-purple-600 font-semibold rounded-full px-6 py-2 shadow hover:shadow-md transition select-none pointer-events-none"
+            className="bg-white text-purple-600 font-semibold rounded-full px-4 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base shadow hover:shadow-md transition select-none pointer-events-none"
           >
             Үзэх
           </span>

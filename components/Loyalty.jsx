@@ -113,22 +113,6 @@ const Loyalty = () => {
               Loyalty урамшуулал зарласан байгууллагууд
             </p>
           </div>
-          {stores?.length > 4 && (
-            <a 
-              href="/loyalty" 
-              className="inline-flex items-center text-primary hover:text-primary/80 font-medium"
-            >
-              See All
-              <svg 
-                className="ml-1 w-4 h-4" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </a>
-          )}
         </div>
 
         <div 
@@ -138,22 +122,23 @@ const Loyalty = () => {
         >
           <div className="overflow-hidden relative px-4">
             <div 
-              className="flex transition-transform duration-500 ease-out gap-6"
-              style={{ transform: `translateX(-${currentSlide * 25}%)` }}
+              className="flex transition-transform duration-500 ease-out gap-8"
+              style={{ transform: `translateX(-${currentSlide * (100 / 4 + 2)}%)` }}
             >
               {safeStores.map((store) => (
-                <LoyaltyCard
-                  key={store.offer_id}
-                  image={store.picture_url}
-                  title={store.offer_title}
-                  description={store.offer_description}
-                  link={`/loyalty/${store.offer_id}`}
-                  organization={store.Organization}
-                  loyaltyDetails={store.LoyaltyOffer}
-                  startDate={store.start_date}
-                  endDate={store.end_date}
-                  source_link={store.source_link}
-                />
+                <div key={store.offer_id} className="flex-none w-1/4">
+                  <LoyaltyCard
+                    image={store.picture_url}
+                    title={store.offer_title}
+                    description={store.offer_description}
+                    link={`/loyalty/${store.offer_id}`}
+                    organization={store.Organization}
+                    loyaltyDetails={store.LoyaltyOffer}
+                    startDate={store.start_date}
+                    endDate={store.end_date}
+                    source_link={store.source_link}
+                  />
+                </div>
               ))}
             </div>
           </div>
