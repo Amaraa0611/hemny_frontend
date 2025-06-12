@@ -63,7 +63,7 @@ const Loyalty = () => {
   // Show loading state
   if (isLoading) {
     return (
-      <section className="py-12 bg-gray-50">
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
             <div className="animate-pulse">
@@ -88,7 +88,7 @@ const Loyalty = () => {
   // Show error state
   if (error) {
     return (
-      <section className="py-12 bg-gray-50">
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center text-red-600">
             Failed to load loyalty stores. Please try again later.
@@ -102,7 +102,7 @@ const Loyalty = () => {
   const canGoPrev = currentSlide > 0;
 
   return (
-    <section className="py-12 bg-gray-50">
+    <section className="py-12 bg-white">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center mb-8">
           <div>

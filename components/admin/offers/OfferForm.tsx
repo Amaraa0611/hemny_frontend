@@ -271,19 +271,24 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
 
           console.log('Submitting discount data:', offerData); // Debug log
           return offerData;
-        } else {
+        } else if (formData.offer_type === 'LOYALTY') {
+          if (!formData.loyalty_points) {
+            throw new Error('Loyalty points are required for loyalty offers');
+          }
           return {
             ...baseOfferData,
             LoyaltyOffer: {
               offer_id: offer?.offer_id || 0,
               loyalty_points: formData.loyalty_points,
-              membership_requirement: formData.membership_requirement
+              membership_requirement: formData.membership_requirement || ''
             },
             CashbackOffer: null,
             DiscountOffer: null,
             GiveawayOffer: null,
             ChallengeOffer: null
           };
+        } else {
+          throw new Error('Unknown offer type');
         }
       })();
 
@@ -456,15 +461,28 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1">Terms & Conditions</label>
+            <label className="block text-sm font-medium text-gray-700">Terms & Conditions</label>
             <textarea
+              name="terms_conditions"
               value={formData.terms_conditions}
               onChange={e => setFormData({ ...formData, terms_conditions: e.target.value })}
-              className="w-full border rounded px-3 py-2"
-              rows={3}
-              placeholder="e.g., 1. Offer valid until end date. 2. Cannot be combined with other offers. 3. Limited to one per customer."
-              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              rows={4}
+              placeholder="Enter terms and conditions"
             />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700">Source Link</label>
+            <input
+              type="url"
+              name="source_link"
+              value={formData.source_link}
+              onChange={e => setFormData({ ...formData, source_link: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              placeholder="https://example.com"
+            />
+            <p className="mt-1 text-sm text-gray-500">Enter the URL where users can find more information about this offer</p>
           </div>
 
           {formData.offer_type === 'DISCOUNT' && (
@@ -525,7 +543,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
           {formData.offer_type === 'LOYALTY' && (
             <>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Loyalty Points</label>
+                <label className="block text-sm font-medium text-gray-700">Loyalty Points <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   name="loyalty_points"
@@ -533,6 +551,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
                   onChange={e => setFormData({ ...formData, loyalty_points: e.target.value })}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="e.g., 100 points"
+                  required
                 />
               </div>
               <div className="mb-4">
