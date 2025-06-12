@@ -40,7 +40,7 @@ const LoyaltyCard = ({
         <img
           src={getImagePath(image)}
           alt={title}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-contain md:object-cover"
         />
         {/* Larger Org Logo as circular badge in lower left */}
         {organization?.logo_url && (

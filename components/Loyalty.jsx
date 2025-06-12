@@ -138,7 +138,7 @@ const Loyalty = () => {
         >
           <div className="overflow-hidden relative px-4">
             <div 
-              className="flex transition-transform duration-500 ease-out"
+              className="flex transition-transform duration-500 ease-out gap-6"
               style={{ transform: `translateX(-${currentSlide * 25}%)` }}
             >
               {safeStores.map((store) => (
