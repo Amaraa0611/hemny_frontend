@@ -1,6 +1,5 @@
 import React from 'react';
 
-const CARD_WIDTH = '320px';
 const CARD_HEIGHT = '370px';
 
 const LoyaltyCard = ({ 
@@ -31,8 +30,8 @@ const LoyaltyCard = ({
 
   return (
     <div
-      className="bg-white rounded-2xl flex flex-col overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow"
-      style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+      className="bg-white rounded-2xl flex flex-col overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-shadow w-full"
+      style={{ height: CARD_HEIGHT }}
       onClick={handleClick}
     >
       {/* Image Section with Larger Logo in Lower Left */}

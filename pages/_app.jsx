@@ -1,4 +1,6 @@
 // pages/_app.jsx
+import 'swiper/css';
+import 'swiper/css/navigation';
 import '../styles/globals.css';
 import Head from 'next/head';
 import MainLayout from '../components/layout/MainLayout';

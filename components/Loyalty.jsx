@@ -1,15 +1,19 @@
 // components/Loyalty.jsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { colors } from '../utils/colors';
 import LoyaltyCard from './cards/LoyaltyCard';
 import { loyaltyApi } from '../services/api';
 
+const getSlidesPerView = () => {
+  if (typeof window === 'undefined') return 1;
+  if (window.innerWidth >= 1024) return 4;
+  if (window.innerWidth >= 640) return 2;
+  return 1;
+};
+
 const Loyalty = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  
   const { 
     data: stores, 
     isLoading, 
@@ -23,44 +27,50 @@ const Loyalty = () => {
     }
   });
 
-  // Add debug logging
-  console.log('Loyalty stores data:', stores);
-
-  // Ensure stores is an array
   const safeStores = Array.isArray(stores) ? stores : [];
+  const [current, setCurrent] = useState(0);
+  const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView());
+  const [isHovered, setIsHovered] = useState(false);
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => {
-      if (prev < (stores?.length ?? 0) - 4) {
+  React.useEffect(() => {
+    const handleResize = () => setSlidesPerView(getSlidesPerView());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Ensure current index is not out of bounds after resize
+  React.useEffect(() => {
+    const maxIndex = Math.max(0, safeStores.length - slidesPerView);
+    if (current > maxIndex) {
+      setCurrent(maxIndex);
+    }
+  }, [slidesPerView, safeStores.length]);
+
+  const maxIndex = Math.max(0, safeStores.length - slidesPerView);
+  const goPrev = () => setCurrent((prev) => Math.max(0, prev - 1));
+  const goNext = () => setCurrent((prev) => Math.min(maxIndex, prev + 1));
+
+  // Helper to calculate correct translateX so last card is always fully visible
+  const getTranslateX = () => {
+    if (safeStores.length <= slidesPerView) return 0;
+    const maxIndex = Math.max(0, safeStores.length - slidesPerView);
+    const index = Math.min(current, maxIndex);
+    return -(index * (100 / slidesPerView));
+  };
+
+  // Autoplay effect
+  React.useEffect(() => {
+    if (isHovered) return;
+    if (safeStores.length <= slidesPerView) return;
+    const interval = setInterval(() => {
+      setCurrent((prev) => {
+        if (prev >= maxIndex) return 0;
         return prev + 1;
-      }
-      return 0;
-    });
-  };
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [isHovered, slidesPerView, safeStores.length, maxIndex]);
 
-  const prevSlide = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide(prev => prev - 1);
-    }
-  };
-
-  useEffect(() => {
-    let intervalId;
-    
-    if (!isHovered && stores?.length > 4) {
-      intervalId = setInterval(() => {
-        nextSlide();
-      }, 5000);
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [isHovered, stores]);
-
-  // Show loading state
   if (isLoading) {
     return (
       <section className="py-12 bg-white">
@@ -85,7 +95,6 @@ const Loyalty = () => {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <section className="py-12 bg-white">
@@ -97,9 +106,6 @@ const Loyalty = () => {
       </section>
     );
   }
-
-  const canGoNext = currentSlide < (stores?.length ?? 0) - 4;
-  const canGoPrev = currentSlide > 0;
 
   return (
     <section className="py-12 bg-white">
@@ -114,33 +120,31 @@ const Loyalty = () => {
             </p>
           </div>
         </div>
-
-        <div 
-          className="relative max-w-[1600px] mx-auto"
+        <div className="relative w-full"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
-          style={{
-            '--card-width': 'calc(50% - 0.5rem)',
-            '--card-gap': '0.5rem',
-            '@media (min-width: 640px)': {
-              '--card-width': 'calc(25% - 1.5rem)',
-              '--card-gap': '2rem'
-            }
-          }}
         >
-          <div className="overflow-hidden relative px-2 sm:px-4">
-            <div 
-              className="flex transition-transform duration-500 ease-out"
-              style={{ 
-                gap: 'var(--card-gap)',
-                transform: `translateX(-${currentSlide * (window.innerWidth < 640 ? 50 : 25)}%)` 
-              }}
+          {current > 0 && (
+            <button
+              onClick={goPrev}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+              aria-label="Previous slide"
             >
-              {safeStores.map((store) => (
-                <div 
-                  key={store.offer_id} 
+              <svg className="w-6 h-6" fill="none" stroke="#004097" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+          <div className="overflow-hidden">
+            <div
+              className="flex transition-transform duration-500 ease-out gap-8"
+              style={{ transform: `translateX(${getTranslateX()}%)` }}
+            >
+              {safeStores.map((store, idx) => (
+                <div
+                  key={store.offer_id}
                   className="flex-none"
-                  style={{ width: 'var(--card-width)' }}
+                  style={{ width: `${100 / slidesPerView}%` }}
                 >
                   <LoyaltyCard
                     image={store.picture_url}
@@ -157,36 +161,13 @@ const Loyalty = () => {
               ))}
             </div>
           </div>
-
-          {/* Navigation Buttons */}
-          {canGoPrev && (
-            <button 
-              onClick={prevSlide}
-              className="absolute -left-3 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors z-10"
-              aria-label="Previous slide"
-            >
-              <svg 
-                className="w-6 h-6" 
-                fill="none" 
-                stroke="#004097" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-          )}
-          {canGoNext && (
-            <button 
-              onClick={nextSlide}
-              className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors z-10"
+          {current < maxIndex && (
+            <button
+              onClick={goNext}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
               aria-label="Next slide"
             >
-              <svg 
-                className="w-6 h-6" 
-                fill="none" 
-                stroke="#004097" 
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="#004097" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
