@@ -30,8 +30,18 @@ const DiscountDetailsModal = ({
 
   const handleOverlayClick = (e) => {
     if (e.target === e.currentTarget) {
+      e.stopPropagation();
       onClose();
     }
+  };
+
+  const handleModalClick = (e) => {
+    e.stopPropagation();
+  };
+
+  const handleCloseClick = (e) => {
+    e.stopPropagation();
+    onClose();
   };
 
   const formatDescription = (text) => {
@@ -62,7 +72,7 @@ const DiscountDetailsModal = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 transition-colors"
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 transition-colors"
       onClick={handleOverlayClick}
     >
       <div
@@ -81,14 +91,14 @@ const DiscountDetailsModal = ({
           maxHeight: '90vh',
           width: '1200px',
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={handleModalClick}
       >
         <div className="p-4 sm:p-6 h-full w-full flex flex-col max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
           {/* Header with Close Button */}
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{offer_title}</h2>
             <button
-              onClick={onClose}
+              onClick={handleCloseClick}
               className="text-gray-400 hover:text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +246,7 @@ const DiscountDetailsModal = ({
         {/* Floating Close Button - Only visible on mobile */}
         <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:hidden">
           <button
-            onClick={onClose}
+            onClick={handleCloseClick}
             className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center space-x-2 font-medium tracking-tight"
           >
             <span>Хаах</span>

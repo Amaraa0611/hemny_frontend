@@ -1,14 +1,25 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DiscountCard from './cards/DiscountCard';
 import { discountApi } from '../services/api';
 import AllDiscountsModal from './modals/AllDiscountsModal';
+import DiscountDetailsModal from './modals/DiscountDetailsModal';
 
 const Discount = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAllModalOpen, setIsAllModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedStore, setSelectedStore] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const carouselRef = useRef(null);
+
+  // Reset states when all modal closes
+  useEffect(() => {
+    if (!isAllModalOpen) {
+      setIsDetailsModalOpen(false);
+      setSelectedStore(null);
+    }
+  }, [isAllModalOpen]);
 
   const { 
     data: stores, 
@@ -17,21 +28,21 @@ const Discount = () => {
   } = useQuery({
     queryKey: ['discount-stores'],
     queryFn: () => discountApi.getStores(),
-    retry: 1, // Retry once if failed
+    retry: 1,
     onError: (error) => {
-      console.error('Query error:', error); // Debug log
+      console.error('Query error:', error);
     }
   });
 
-  console.log('Stores data:', stores); // Debug log
-  console.log('Loading state:', isLoading); // Debug log
-  console.log('Error state:', error); // Debug log
+  console.log('Stores data:', stores);
+  console.log('Loading state:', isLoading);
+  console.log('Error state:', error);
 
   const handleNext = () => {
     if (currentIndex < (stores?.length ?? 0) - 8 && !isAnimating) {
       setIsAnimating(true);
       setCurrentIndex(prev => prev + 2);
-      setTimeout(() => setIsAnimating(false), 300); // Match transition duration
+      setTimeout(() => setIsAnimating(false), 300);
     }
   };
 
@@ -39,8 +50,18 @@ const Discount = () => {
     if (currentIndex > 0 && !isAnimating) {
       setIsAnimating(true);
       setCurrentIndex(prev => prev - 2);
-      setTimeout(() => setIsAnimating(false), 300); // Match transition duration
+      setTimeout(() => setIsAnimating(false), 300);
     }
+  };
+
+  const handleOpenDetails = (store) => {
+    setSelectedStore(store);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsModalOpen(false);
+    setSelectedStore(null);
   };
 
   // Show loading state
@@ -49,19 +70,24 @@ const Discount = () => {
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center mb-8">
-            <div className="animate-pulse">
-              <div className="h-8 w-64 bg-gray-200 rounded mb-2"></div>
-              <div className="h-4 w-96 bg-gray-200 rounded"></div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                Hot Deals & Discount
+              </h2>
+              <p className="text-gray-600">
+                Хямдрал урамшуулал зарласан байгууллагууд
+              </p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-[22px]">
             {[...Array(4)].map((_, index) => (
-              <div key={index} className="animate-pulse bg-white rounded-lg h-24 flex">
-                <div className="w-24 bg-gray-200"></div>
-                <div className="flex-1 p-3">
-                  <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+              <div key={index} className="bg-white rounded-xl shadow-md p-4 sm:p-5 h-[88px] animate-pulse">
+                <div className="flex items-center gap-4 sm:gap-6">
+                  <div className="w-20 h-14 sm:w-24 sm:h-16 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -76,18 +102,24 @@ const Discount = () => {
     return (
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
-          <div className="text-center text-red-600">
-            Failed to load discount stores. Please try again later.
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Hot Deals & Discount
+            </h2>
+            <p className="text-red-600">
+              Failed to load discount stores. Please try again later.
+            </p>
           </div>
         </div>
       </section>
     );
   }
 
-  const visibleStores = stores?.slice(currentIndex, currentIndex + 8) ?? [];
+  // Calculate visible stores
+  const visibleStores = stores?.slice(currentIndex, currentIndex + 8) || [];
   const hasMoreStores = (stores?.length ?? 0) > 8;
-  const canGoNext = currentIndex < (stores?.length ?? 0) - 8;
   const canGoPrev = currentIndex > 0;
+  const canGoNext = currentIndex < (stores?.length ?? 0) - 8;
 
   return (
     <section className="py-12 bg-gray-50">
@@ -103,7 +135,7 @@ const Discount = () => {
           </div>
           {hasMoreStores && (
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => setIsAllModalOpen(true)}
               className="inline-flex items-center text-primary hover:text-primary/80 font-medium"
             >
               Бүгд
@@ -148,7 +180,10 @@ const Discount = () => {
                   isAnimating ? 'animate-slide' : ''
                 }`}
               >
-                <DiscountCard {...store} />
+                <DiscountCard 
+                  {...store} 
+                  onOpenDetails={() => handleOpenDetails(store)}
+                />
               </div>
             ))}
           </div>
@@ -173,10 +208,18 @@ const Discount = () => {
       </div>
 
       <AllDiscountsModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isAllModalOpen}
+        onClose={() => setIsAllModalOpen(false)}
         stores={stores}
       />
+
+      {selectedStore && (
+        <DiscountDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={handleCloseDetails}
+          {...selectedStore}
+        />
+      )}
     </section>
   );
 };
