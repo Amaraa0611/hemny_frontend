@@ -44,16 +44,17 @@ const CashbackCard = (props) => {
         onClick={() => setIsModalOpen(true)}
       >
         <div 
-          className="h-[88px] flex items-center justify-center p-4 rounded-lg"
+          className="h-[110px] flex items-center justify-center p-5 rounded-xl"
           style={{
             backgroundColor: props.Organization?.brand_colors?.primary || colors.secondary,
-            backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.03) 0%, rgba(0, 0, 0, 0) 100%)'
+            boxShadow: '0 2px 12px 0 rgba(0,0,0,0.04) inset',
+            border: '1px solid rgba(255,255,255,0.10)'
           }}
         >
           <img 
             src={getLogo()}
             alt={props.Organization?.org_name}
-            className="max-h-12 w-auto object-contain"
+            className="max-h-16 w-auto object-contain"
             loading="lazy"
             onError={(e) => {
               console.error(`Failed to load logo: ${getLogo()}`);

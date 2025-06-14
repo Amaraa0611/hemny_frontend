@@ -74,19 +74,19 @@
                 <span className="bg-gradient-to-r from-[#5856d6] to-blue-500 text-transparent bg-clip-text inline-block">хямдрал, хөнгөлөлтийн мэдээллийг алдахгүй!</span>
                 </h2>
                 <p className="text-lg sm:text-xl text-gray-600 leading-relaxed">
-                <span className="inline-block">Таны дуртай байгууллагуудын зарласан</span>{' '}
-                <span className="font-semibold text-gray-900 inline-block">хямдрал, лояалти,</span>{' '}
-                <span className="font-semibold text-gray-900 inline-block">cashback, хөнгөлөлтийн</span>{' '}
+                <span className="inline-block">Таны дуртай байгууллагуудын зарласан</span>
+                <span className="font-semibold text-gray-900 inline-block">хямдрал, лояалти,</span>
+                <span className="font-semibold text-gray-900 inline-block">cashback, хөнгөлөлтийн</span>
                 <span className="inline-block">мэдээллийг бүгдийг нэг доороос.</span>
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start pt-6 sm:pt-8">
-                <div className="flex items-center px-4 sm:px-5 py-2.5 bg-[#5856d6] text-white rounded-full shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-center px-4 sm:px-5 py-2.5 bg-[#5856d6] text-white rounded-full shadow-lg hover:shadow-xl transition-shadow">
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                     <span className="font-medium whitespace-nowrap">Зөв мэдээлэл</span>
                 </div>
-                <div className="flex items-center px-4 sm:px-5 py-2.5 border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-center justify-center px-4 sm:px-5 py-2.5 border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-shadow">
                     <svg className="w-5 h-5 mr-2 text-[#5856d6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2" />
                     </svg>

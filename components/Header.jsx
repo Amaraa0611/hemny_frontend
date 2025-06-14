@@ -26,7 +26,7 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center justify-center flex-1 sm:flex-none sm:justify-start">
             <a href="/" className="flex-shrink-0">
               <img 
                 src="/images/logo/Hemny_logo.png" 
@@ -35,7 +35,7 @@ const Header = () => {
               />
             </a>
 
-            {/* Categories Dropdown */}
+            {/* Categories Dropdown - Commented out for later use
             <div className="relative group ml-8">
               <button className="flex items-center hover:text-primary py-2">
                 <span className="font-noto-sans text-base">Ангилал</span>
@@ -76,7 +76,6 @@ const Header = () => {
                       </svg>
                     </a>
 
-                    {/* Popup window with subcategories */}
                     {activeCategory === category.id && (
                       <div className="absolute left-[200px] top-0 w-[600px] bg-white border border-gray-200 shadow-lg p-6">
                         <div className="flex">
@@ -108,6 +107,7 @@ const Header = () => {
                 ))}
               </div>
             </div>
+            */}
           </div>
 
           {/* Facebook Icon */}
