@@ -61,6 +61,13 @@ export interface Organization {
     format: string;
     color_scheme: string;
   }>;
+  Logos?: Array<{
+    id: number;
+    url: string;
+    offer_type: string;
+    format: string;
+    color_scheme: string;
+  }>;
   CashbackOffer?: {
     cashback_rate: string;
     terms_conditions: string;

@@ -51,6 +51,34 @@ export const organizationService = {
     }
   },
 
+  getById: async (id: number): Promise<Organization | null> => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/organizations/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch organization');
+      }
+      const org = await response.json();
+      return {
+        org_id: org.org_id,
+        org_name: org.org_name,
+        org_description: org.org_description,
+        website_url: org.website_url,
+        logo_url: org.logo_url,
+        location: org.location,
+        contact_info: org.contact_info,
+        brand_colors: org.brand_colors,
+        categories: org.categories || [],
+        CashbackOffer: org.CashbackOffer || null,
+        Logos: org.Logos || [],
+        created_at: org.created_at || new Date().toISOString(),
+        updated_at: org.updated_at || new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error fetching organization:', error);
+      return null;
+    }
+  },
+
   create: async (data: CreateOrganizationData): Promise<Organization> => {
     try {
       console.log('Creating organization with data:', data);
@@ -262,14 +290,6 @@ export const organizationService = {
       console.error('Error deleting category combination:', error);
       throw error;
     }
-  },
-
-  getById: async (id: number) => {
-    const response = await fetch(`${BACKEND_URL}/organizations/${id}`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch organization');
-    }
-    return response.json();
   },
 
   getByName: async (orgName: string) => {

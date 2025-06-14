@@ -12,6 +12,8 @@ export interface CashbackMerchant {
   picture_url: string;
   created_at: string;
   updated_at: string;
+  payment_org: number;
+  source_link: string | null;
   CashbackOffer: {
     offer_id: number;
     cashback_rate: string;

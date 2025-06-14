@@ -62,6 +62,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
   });
 
   const [organizations, setOrganizations] = useState<Organization[]>([]);
+  const [financeOrganizations, setFinanceOrganizations] = useState<Organization[]>([]);
   const [selectedOrgName, setSelectedOrgName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +126,23 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
     fetchOrganizationDetails(selectedOrgName);
   }, [organizations, fetchOrganizationDetails]);
 
-  // Fetch organizations only once when component mounts
+  // Add function to fetch finance organizations
+  const fetchFinanceOrganizations = useCallback(async () => {
+    try {
+      const allOrgs = await organizationService.getAll();
+      const financeOrgs = allOrgs.filter(org => 
+        org.categories.some(cat => 
+          cat.name_en === 'Finance & Insurance' || 
+          cat.name_mn === 'Санхүү & Даатгал'
+        )
+      );
+      setFinanceOrganizations(financeOrgs);
+    } catch (error) {
+      console.error('Error fetching finance organizations:', error);
+    }
+  }, []);
+
+  // Fetch organizations and finance organizations when component mounts
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
@@ -136,7 +153,8 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
       }
     };
     fetchOrganizations();
-  }, []);
+    fetchFinanceOrganizations();
+  }, [fetchFinanceOrganizations]);
 
   // Update form data when offer changes
   useEffect(() => {
@@ -432,10 +450,16 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               className="w-full border rounded px-3 py-2"
               required
             >
-              <option value="1">Organization 1</option>
-              <option value="2">Organization 2</option>
-              <option value="3">Organization 3</option>
+              <option value="">Select Payment Organization</option>
+              {financeOrganizations.map((org) => (
+                <option key={org.org_id} value={org.org_id}>
+                  {org.org_name}
+                </option>
+              ))}
             </select>
+            <p className="text-sm text-gray-500 mt-1">
+              Select a finance organization that will process the cashback payment
+            </p>
           </div>
 
           <div className="mb-4">

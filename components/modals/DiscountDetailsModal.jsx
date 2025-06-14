@@ -7,7 +7,8 @@ const DiscountDetailsModal = ({
   end_date,
   Organization,
   DiscountOffer,
-  picture_url
+  picture_url,
+  source_link
 }) => {
   if (!isOpen) return null;
 
@@ -33,32 +34,35 @@ const DiscountDetailsModal = ({
     }
   };
 
-  // Responsive modal animation classes
-  const modalAnimation = `
-    transition-all duration-300 ease-out
-    sm:scale-100 sm:opacity-100 sm:translate-y-0
-    scale-90 opacity-0 translate-y-8
-    animate-modal-open
-  `;
-  // For mobile, full screen, no border radius/margin
-  const modalContainer = `
-    bg-white
-    w-full
-    max-w-2xl
-    max-h-[90vh]
-    overflow-y-auto
-    mx-2 sm:mx-4
-    rounded-lg
-    sm:rounded-lg
-    ${isOpen ? 'sm:animate-modal-open' : ''}
-    ${isOpen ? 'animate-mobile-modal-open' : ''}
-    sm:p-0
-    p-0
-  `;
+  const formatDescription = (text) => {
+    if (!text) return '';
+    // Convert URLs to clickable links
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.split(urlRegex).map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {part}
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+            </svg>
+          </a>
+        );
+      }
+      return part;
+    });
+  };
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-black/50 transition-colors"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 transition-colors"
       onClick={handleOverlayClick}
     >
       <div
@@ -73,21 +77,19 @@ const DiscountDetailsModal = ({
           ' transition-all duration-500 ease-out'
         }
         style={{
-          maxWidth: '52rem', // wider for desktop
-          maxHeight: '95vh', // taller for desktop
+          maxWidth: '90vw', // wider for desktop
+          maxHeight: '90vh', // taller for desktop
+          width: '1200px', // fixed width for desktop
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-4 sm:p-6 h-full w-full flex flex-col max-h-[90vh] sm:max-h-[80vh] overflow-y-auto">
-          {/* Header with Organization Logo */}
-          <div className="flex justify-between items-start mb-4">
-            <div className="pr-8 flex-1">
-              <h2 className="text-base sm:text-xl font-semibold text-gray-900 leading-tight break-words">
-                {offer_title}
-              </h2>
-            </div>
+          {/* Header with Close Button */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl font-bold text-gray-900">{offer_title}</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-500 p-1 flex-shrink-0"
+              className="text-gray-400 hover:text-gray-500 p-2 hover:bg-gray-100 rounded-full transition-colors hidden sm:block"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -95,55 +97,153 @@ const DiscountDetailsModal = ({
             </button>
           </div>
 
-          {/* Content (text fields above, image at the bottom) */}
-          <div className="flex flex-col flex-1 space-y-4 sm:space-y-6">
-            {/* Discount Value */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Хямдралын хэмжээ</h3>
-              <p className="text-lg sm:text-xl font-semibold text-primary">
-                {DiscountOffer?.discount_value}% Off
-              </p>
-            </div>
+          {/* Main Content */}
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Left Column */}
+            <div className="w-full lg:w-[65%] space-y-6">
+              {/* Offer Period and Organization - Side by side on desktop */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Offer Period */}
+                <div className="flex-1 bg-blue-50 p-4 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Урамшууллын хугацаа</h3>
+                  <div className="flex items-center space-x-2 text-blue-700">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm sm:text-base">
+                      {formatDate(start_date)} - {formatDate(end_date)}
+                    </p>
+                  </div>
+                </div>
 
-            {/* Description */}
-            <div>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed whitespace-pre-line break-words">
-                {offer_description}
-              </p>
-            </div>
+                {/* Organization */}
+                {Organization && (
+                  <div className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Байгууллага</h3>
+                    <div className="flex items-center space-x-3">
+                      <div className="relative">
+                        <img
+                          src={Organization?.Logos?.[0]?.url || '/images/default-logo.png'}
+                          alt={Organization.org_name}
+                          className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/images/default-logo.png';
+                          }}
+                        />
+                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </div>
+                      <p className="text-base font-medium text-gray-900">{Organization.org_name}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Offer Period */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Урамшууллын хугацаа</h3>
-              <p className="text-sm sm:text-base text-gray-600">
-                {formatDate(start_date)} - {formatDate(end_date)}
-              </p>
-            </div>
+              {/* Description */}
+              <div>
+                <div className="bg-gray-50 p-4 rounded-xl text-gray-600 whitespace-pre-line">
+                  {formatDescription(offer_description)}
+                </div>
+              </div>
 
-            {/* Terms & Conditions */}
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-1 sm:mb-2 text-sm sm:text-base">Ерөнхий нөхцөл</h3>
-              <div className="text-sm sm:text-base text-gray-600 whitespace-pre-line bg-gray-50 p-3 sm:p-4 rounded-lg">
-                {DiscountOffer?.terms_conditions}
+              {/* Terms & Conditions */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Нөхцөл</h3>
+                <div className="bg-gray-50 p-4 rounded-xl text-gray-600 whitespace-pre-line">
+                  {formatDescription(DiscountOffer?.terms_conditions)}
+                </div>
+              </div>
+
+              {/* Source Link - Only visible on mobile */}
+              {source_link && (
+                <div className="lg:hidden">
+                  <a
+                    href={source_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl w-full justify-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span>Дэлгэрэнгүй</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              )}
+
+              {/* Image - Only visible on mobile */}
+              <div className="lg:hidden">
+                {picture_url && (
+                  <div className="flex items-center justify-center">
+                    <img
+                      src={getImagePath(picture_url)}
+                      alt={offer_title}
+                      className="max-h-[300px] max-w-full object-contain rounded-xl"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/default-offer.jpg';
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Offer Image at the bottom */}
-          {picture_url && (
-            <div className="mt-6 transition-all duration-300 ease-in-out transform hover:scale-[1.02]">
-              <img
-                src={getImagePath(picture_url)}
-                alt={offer_title}
-                className="w-full h-auto rounded-lg shadow-lg object-contain animate-fade-in"
-                style={{ maxHeight: '300px', minHeight: '150px' }}
-                onError={(e) => {
-                  console.error('Image failed to load:', e.target.src);
-                  e.target.src = '/images/default-logo.png';
-                }}
-              />
+            {/* Right Column - Only visible on desktop */}
+            <div className="hidden lg:flex w-[35%] flex-col">
+              <div className="p-4">
+                {picture_url && (
+                  <div className="h-full flex items-center justify-center">
+                    <img
+                      src={getImagePath(picture_url)}
+                      alt={offer_title}
+                      className="max-h-full max-w-full object-contain rounded-xl"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/default-offer.jpg';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Source Link */}
+              {source_link && (
+                <div className="p-4 mt-auto">
+                  <a
+                    href={source_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl w-full justify-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <span>Дэлгэрэнгүй</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Floating Close Button - Only visible on mobile */}
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 sm:hidden">
+          <button
+            onClick={onClose}
+            className="bg-white text-gray-900 px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all flex items-center space-x-2"
+          >
+            <span>Хаах</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       </div>
 
