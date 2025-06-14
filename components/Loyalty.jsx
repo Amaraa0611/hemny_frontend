@@ -113,7 +113,7 @@ const Loyalty = () => {
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Loyalty Program
+              Loyalty & Campaigns
             </h2>
             <p className="text-gray-600">
               Loyalty урамшуулал зарласан байгууллагууд

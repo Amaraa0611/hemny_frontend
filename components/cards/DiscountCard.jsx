@@ -4,6 +4,10 @@ import DiscountDetailsModal from '../modals/DiscountDetailsModal';
 const DiscountCard = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
   // Helper function to get the appropriate logo and convert to proper display path
   const getLogo = () => {
     if (!props.Organization?.Logos || props.Organization.Logos.length === 0) {
@@ -20,7 +24,7 @@ const DiscountCard = (props) => {
     }
     
     // If no images/ in path, return default
-    return '/images/default-logo.png';
+    return '';
   };
 
   // Format date to readable string
@@ -34,16 +38,9 @@ const DiscountCard = (props) => {
     return `${date.getFullYear()} оны ${monthsInMongolian[date.getMonth()]} ${date.getDate()}`;
   };
 
-  // Extract discount value and format with 'хямдрал'
-  const getDiscountText = (discountValue) => {
-    if (!discountValue) return '';
-    // Remove any dash/old logic, just show the value + ' хямдрал'
-    return `${discountValue}% хямдрал`;
-  };
-
-  const handleOpenModal = (e) => {
-    e.stopPropagation();
-    setIsModalOpen(true);
+  const getDiscountText = (value) => {
+    if (!value) return '';
+    return `${value}% Discount`;
   };
 
   // Truncate description if it's too long
@@ -57,7 +54,7 @@ const DiscountCard = (props) => {
     <>
       <div 
         onClick={handleOpenModal}
-        className="bg-white rounded-xl shadow-md flex items-center p-4 sm:p-5 gap-4 sm:gap-6 w-full hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm relative"
+        className="bg-white rounded-xl shadow-md flex items-center p-4 sm:p-5 gap-4 sm:gap-6 w-full hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm h-[88px]"
       >
         <div className="flex-shrink-0 flex items-center justify-center h-14 w-20 sm:h-16 sm:w-24">
           <img 
@@ -71,22 +68,15 @@ const DiscountCard = (props) => {
             }}
           />
         </div>
-        <div className="flex-1 min-w-0 pr-20 sm:pr-0">
+        <div className="flex-1 min-w-0">
           <div className="flex flex-col">
-            <span className="text-base sm:text-lg font-bold text-gray-900 leading-tight line-clamp-2 mb-0.5">
+            <span className="text-base sm:text-lg font-bold text-gray-900 leading-tight line-clamp-1 mb-0.5">
               {props.offer_title}
             </span>
-            <span className="text-purple-600 font-semibold text-sm sm:text-base mt-0.5">
+            <span className="text-purple-600 font-semibold text-sm sm:text-base">
               {getDiscountText(props.DiscountOffer?.discount_value)}
             </span>
           </div>
-        </div>
-        <div className="absolute bottom-0 right-0 translate-y-1/2 sm:translate-y-0 sm:relative sm:flex-shrink-0 sm:flex sm:items-center">
-          <span 
-            className="bg-white text-purple-600 font-semibold rounded-full px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base shadow hover:shadow-md transition select-none pointer-events-none"
-          >
-            Үзэх
-          </span>
         </div>
       </div>
 

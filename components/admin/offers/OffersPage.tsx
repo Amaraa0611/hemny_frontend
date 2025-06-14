@@ -60,6 +60,19 @@ const OffersPage: React.FC = () => {
     setOfferToDelete(null);
   };
 
+  const handleCopyOffer = (offer: Offer) => {
+    const { ...offerWithoutId } = offer;
+    const newOffer = {
+      ...offerWithoutId,
+      offer_title: `${offer.offer_title} (Copy)`,
+      start_date: new Date().toISOString().split('T')[0],
+      end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      is_active: true,
+    };
+    setSelectedOffer(newOffer as Offer);
+    setIsFormOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-8">
@@ -172,6 +185,13 @@ const OffersPage: React.FC = () => {
 
                   {/* Action Buttons */}
                   <div className="flex space-x-2">
+                    <button
+                      onClick={() => handleCopyOffer(offer)}
+                      className="text-green-500 hover:text-green-700"
+                      title="Copy Offer"
+                    >
+                      Copy
+                    </button>
                     <button
                       onClick={() => {
                         setSelectedOffer(offer);

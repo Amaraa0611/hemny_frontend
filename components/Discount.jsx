@@ -1,8 +1,15 @@
+import React, { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DiscountCard from './cards/DiscountCard';
 import { discountApi } from '../services/api';
+import AllDiscountsModal from './modals/AllDiscountsModal';
 
 const Discount = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const carouselRef = useRef(null);
+
   const { 
     data: stores, 
     isLoading, 
@@ -19,6 +26,22 @@ const Discount = () => {
   console.log('Stores data:', stores); // Debug log
   console.log('Loading state:', isLoading); // Debug log
   console.log('Error state:', error); // Debug log
+
+  const handleNext = () => {
+    if (currentIndex < (stores?.length ?? 0) - 8 && !isAnimating) {
+      setIsAnimating(true);
+      setCurrentIndex(prev => prev + 2);
+      setTimeout(() => setIsAnimating(false), 300); // Match transition duration
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentIndex > 0 && !isAnimating) {
+      setIsAnimating(true);
+      setCurrentIndex(prev => prev - 2);
+      setTimeout(() => setIsAnimating(false), 300); // Match transition duration
+    }
+  };
 
   // Show loading state
   if (isLoading) {
@@ -61,9 +84,10 @@ const Discount = () => {
     );
   }
 
-  // Only show first 8 stores
-  const visibleStores = stores?.slice(0, 8) ?? [];
+  const visibleStores = stores?.slice(currentIndex, currentIndex + 8) ?? [];
   const hasMoreStores = (stores?.length ?? 0) > 8;
+  const canGoNext = currentIndex < (stores?.length ?? 0) - 8;
+  const canGoPrev = currentIndex > 0;
 
   return (
     <section className="py-12 bg-gray-50">
@@ -78,11 +102,11 @@ const Discount = () => {
             </p>
           </div>
           {hasMoreStores && (
-            <a 
-              href="/discount" 
+            <button 
+              onClick={() => setIsModalOpen(true)}
               className="inline-flex items-center text-primary hover:text-primary/80 font-medium"
             >
-              See All
+              Бүгд
               <svg 
                 className="ml-1 w-4 h-4" 
                 fill="none" 
@@ -91,19 +115,68 @@ const Discount = () => {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
-            </a>
+            </button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-[22px]">
-          {visibleStores.map((store) => (
-            <DiscountCard
-              key={store.offer_id}
-              {...store}
-            />
-          ))}
+        <div className="relative">
+          {canGoPrev && (
+            <button 
+              onClick={handlePrev}
+              disabled={isAnimating}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-10 p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all duration-300 ${isAnimating ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
+            >
+              <svg 
+                className="w-6 h-6 text-gray-600" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          <div 
+            ref={carouselRef}
+            className="grid grid-cols-1 sm:grid-cols-2 gap-[22px] transition-all duration-300 ease-in-out"
+          >
+            {visibleStores.map((store, index) => (
+              <div 
+                key={store.offer_id}
+                className={`transform transition-all duration-300 ease-in-out ${
+                  isAnimating ? 'animate-slide' : ''
+                }`}
+              >
+                <DiscountCard {...store} />
+              </div>
+            ))}
+          </div>
+
+          {canGoNext && (
+            <button 
+              onClick={handleNext}
+              disabled={isAnimating}
+              className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-10 p-2 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-all duration-300 ${isAnimating ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'}`}
+            >
+              <svg 
+                className="w-6 h-6 text-gray-600" 
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
+
+      <AllDiscountsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        stores={stores}
+      />
     </section>
   );
 };

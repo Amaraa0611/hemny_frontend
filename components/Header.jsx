@@ -1,7 +1,7 @@
 // components/Header.jsx
 
 import React, { useState, useEffect } from 'react';
-import { FaFacebookSquare } from 'react-icons/fa';
+import { FaFacebook } from 'react-icons/fa';
 
 const Header = () => {
   const [categories, setCategories] = useState([]);
@@ -112,18 +112,12 @@ const Header = () => {
 
           {/* Facebook Icon */}
           <div className="flex items-center">
-            <a
-              href="https://www.facebook.com/profile.php?id=61575261267249"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors"
+            <a href="https://www.facebook.com/profile.php?id=61575261267249" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               className="text-gray-600 hover:text-primary transition-colors"
             >
-              <FaFacebookSquare
-                size={26}
-                className="text-[#7c3aed] hover:text-[#a78bfa] drop-shadow-sm transition-colors duration-200"
-                style={{ filter: 'drop-shadow(0 2px 6px rgba(124,58,237,0.15))' }}
-                title="Facebook"
-              />
+              <FaFacebook size={20} />
             </a>
           </div>
         </div>
