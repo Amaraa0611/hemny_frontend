@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { blogApi } from '../services/blogApi';
 import { ChevronDownIcon, HomeIcon, BookOpenIcon } from '@heroicons/react/24/solid';
 
@@ -9,10 +9,12 @@ const menuItems = [
   { name: 'Blog', href: '/blog', icon: BookOpenIcon },
 ];
 
-const MainMenu = () => {
+const SiteMenu = () => {
   const router = useRouter();
   const [tags, setTags] = useState([]);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -25,6 +27,22 @@ const MainMenu = () => {
       }
     };
     fetchTags();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY <= 0) {
+        setVisible(true);
+      } else if (currentScrollY > lastScrollY.current) {
+        setVisible(false); // Scrolling down
+      } else {
+        setVisible(true); // Scrolling up
+      }
+      lastScrollY.current = currentScrollY;
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const renderLink = (item, children) => {
@@ -52,7 +70,11 @@ const MainMenu = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm">
+    <nav
+      className={`sticky top-[56px] z-40 bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm transition-transform duration-300 ${
+        visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'
+      }`}
+    >
       <div className="container mx-auto px-4">
         <ul className="flex space-x-8 h-14 items-center">
           {menuItems.map((item) => (
@@ -110,4 +132,4 @@ const MainMenu = () => {
   );
 };
 
-export default MainMenu;
+export default SiteMenu;
