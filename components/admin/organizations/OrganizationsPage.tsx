@@ -11,6 +11,7 @@ const OrganizationsPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [orgToDelete, setOrgToDelete] = useState<Organization | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -27,6 +28,33 @@ const OrganizationsPage: React.FC = () => {
   useEffect(() => {
     fetchOrganizations();
   }, [fetchOrganizations]);
+
+  // Group organizations by category
+  const groupedOrganizations = organizations.reduce((acc, org) => {
+    if (org.categories && org.categories.length > 0) {
+      org.categories.forEach(category => {
+        const categoryName = category.name_en || category.name_mn || 'Uncategorized';
+        if (!acc[categoryName]) {
+          acc[categoryName] = [];
+        }
+        acc[categoryName].push(org);
+      });
+    } else {
+      if (!acc['Uncategorized']) {
+        acc['Uncategorized'] = [];
+      }
+      acc['Uncategorized'].push(org);
+    }
+    return acc;
+  }, {} as Record<string, Organization[]>);
+
+  // Get all unique categories
+  const categories = Object.keys(groupedOrganizations).sort();
+
+  // Filter organizations based on selected category
+  const filteredOrganizations = selectedCategory === 'all' 
+    ? organizations 
+    : groupedOrganizations[selectedCategory] || [];
 
   const handleEdit = (organization: Organization) => {
     setSelectedOrganization(organization);
@@ -63,36 +91,127 @@ const OrganizationsPage: React.FC = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {organizations.map((organization) => (
-          <div key={organization.org_id} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold">{organization.org_name}</h2>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => handleEdit(organization)}
-                  className="text-blue-500 hover:text-blue-700"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(organization.org_id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  Delete
-                </button>
+      {/* Category Filter */}
+      <div className="mb-6">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedCategory('all')}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              selectedCategory === 'all'
+                ? 'bg-blue-500 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+          >
+            All ({organizations.length})
+          </button>
+          {categories.map((category) => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                selectedCategory === category
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {category} ({groupedOrganizations[category].length})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Organizations Grid */}
+      {selectedCategory === 'all' ? (
+        // Show grouped by categories
+        <div className="space-y-8">
+          {categories.map((category) => (
+            <div key={category} className="bg-gray-50 rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium mr-3">
+                  {groupedOrganizations[category].length}
+                </span>
+                {category}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {groupedOrganizations[category].map((organization) => (
+                  <div key={organization.org_id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{organization.org_name}</h3>
+                      <div className="flex space-x-1">
+                        <button
+                          onClick={() => handleEdit(organization)}
+                          className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(organization.org_id)}
+                          className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        {category}
+                      </span>
+                      {organization.brand_colors?.primary ? (
+                        <div 
+                          className="w-6 h-6 rounded-full border border-gray-300"
+                          style={{ backgroundColor: organization.brand_colors.primary }}
+                          title={`Primary color: ${organization.brand_colors.primary}`}
+                        />
+                      ) : (
+                        <div className="w-6 h-6" /> // Placeholder for consistent alignment
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-            <p className="text-gray-600 mb-4">{organization.org_description}</p>
-            <div className="space-y-2">
-              <p><span className="font-medium">Website:</span> {organization.website_url}</p>
-              <p><span className="font-medium">Location:</span> {organization.location}</p>
-              <p><span className="font-medium">Email:</span> {organization.contact_info?.email}</p>
-              <p><span className="font-medium">Phone:</span> {organization.contact_info?.phone}</p>
+          ))}
+        </div>
+      ) : (
+        // Show filtered organizations
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredOrganizations.map((organization) => (
+            <div key={organization.org_id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+              <div className="flex justify-between items-start mb-3">
+                <h2 className="text-lg font-semibold text-gray-900 line-clamp-2">{organization.org_name}</h2>
+                <div className="flex space-x-1">
+                  <button
+                    onClick={() => handleEdit(organization)}
+                    className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1 rounded hover:bg-blue-50"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(organization.org_id)}
+                    className="text-red-500 hover:text-red-700 text-xs px-2 py-1 rounded hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                  {selectedCategory}
+                </span>
+                {organization.brand_colors?.primary ? (
+                  <div 
+                    className="w-6 h-6 rounded-full border border-gray-300"
+                    style={{ backgroundColor: organization.brand_colors.primary }}
+                    title={`Primary color: ${organization.brand_colors.primary}`}
+                  />
+                ) : (
+                  <div className="w-6 h-6" /> // Placeholder for consistent alignment
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Modal/Overlay */}
       {showForm && (
