@@ -12,6 +12,7 @@ const OrganizationsPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [orgToDelete, setOrgToDelete] = useState<Organization | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchOrganizations = useCallback(async () => {
     try {
@@ -29,8 +30,13 @@ const OrganizationsPage: React.FC = () => {
     fetchOrganizations();
   }, [fetchOrganizations]);
 
-  // Group organizations by category
-  const groupedOrganizations = organizations.reduce((acc, org) => {
+  // Filter organizations by search query first
+  const searchedOrganizations = organizations.filter(org =>
+    org.org_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Group the searched organizations by category
+  const groupedOrganizations = searchedOrganizations.reduce((acc, org) => {
     if (org.categories && org.categories.length > 0) {
       org.categories.forEach(category => {
         const categoryName = category.name_en || category.name_mn || 'Uncategorized';
@@ -48,13 +54,11 @@ const OrganizationsPage: React.FC = () => {
     return acc;
   }, {} as Record<string, Organization[]>);
 
-  // Get all unique categories
+  // Get all unique categories from the searched results
   const categories = Object.keys(groupedOrganizations).sort();
 
-  // Filter organizations based on selected category
-  const filteredOrganizations = selectedCategory === 'all' 
-    ? organizations 
-    : groupedOrganizations[selectedCategory] || [];
+  // Filter organizations for the grid view when a specific category is selected
+  const filteredOrganizations = groupedOrganizations[selectedCategory] || [];
 
   const handleEdit = (organization: Organization) => {
     setSelectedOrganization(organization);
@@ -91,6 +95,16 @@ const OrganizationsPage: React.FC = () => {
         </button>
       </div>
 
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search by organization name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {/* Category Filter */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2">
@@ -102,7 +116,7 @@ const OrganizationsPage: React.FC = () => {
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >
-            All ({organizations.length})
+            All ({searchedOrganizations.length})
           </button>
           {categories.map((category) => (
             <button
