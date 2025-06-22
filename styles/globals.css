@@ -37,3 +37,8 @@ svg {
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in;
 }
+
+.dark-bg, .dark-bg body, .dark-bg #__next, .dark-bg html {
+  background: #18122B !important;
+  color: #f3f3f3 !important;
+}

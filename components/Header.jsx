@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { organizationService } from '../services/organizationService';
 import { offerService } from '../services/offerService';
+import { categoryService } from '../services/categoryService';
 import { FiSearch } from 'react-icons/fi';
 
 const Header = () => {
@@ -13,19 +14,22 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [allData, setAllData] = useState({ orgs: [], offers: [] });
+  const [allCategories, setAllCategories] = useState([]);
   const router = useRouter();
   const dropdownRef = useRef(null);
 
-  // Fetch all orgs and offers on first search
+  // Fetch all orgs, offers, and categories on first search
   const fetchAllData = async () => {
     setLoading(true);
     try {
-      const [orgs, offers] = await Promise.all([
+      const [orgs, offers, categories] = await Promise.all([
         organizationService.getAll(),
         offerService.getAll(),
+        categoryService.getAll(),
       ]);
       setAllData({ orgs, offers });
-      return { orgs, offers };
+      setAllCategories(categories);
+      return { orgs, offers, categories };
     } finally {
       setLoading(false);
     }
@@ -41,10 +45,12 @@ const Header = () => {
     }
     let orgs = allData.orgs;
     let offers = allData.offers;
-    if (orgs.length === 0 && offers.length === 0) {
+    let categories = allCategories;
+    if (orgs.length === 0 && offers.length === 0 && categories.length === 0) {
       const data = await fetchAllData();
       orgs = data.orgs;
       offers = data.offers;
+      categories = data.categories;
     }
     const q = value.toLowerCase();
     // Filter organizations
@@ -59,7 +65,15 @@ const Header = () => {
     const offerResults = offers.filter(offer =>
       offer.title && offer.title.toLowerCase().includes(q)
     );
+    // Filter categories (parent only)
+    const categoryResults = categories.filter(cat =>
+      !cat.parent_id && (
+        (cat.name_en && cat.name_en.toLowerCase().includes(q)) ||
+        (cat.name_mn && cat.name_mn.toLowerCase().includes(q))
+      )
+    );
     setResults([
+      ...categoryResults.map(cat => ({ type: 'category', data: cat })),
       ...orgResults.map(org => ({ type: 'org', data: org })),
       ...offerResults.map(offer => ({ type: 'offer', data: offer })),
     ]);
@@ -126,8 +140,14 @@ const Header = () => {
                 {results.map((item, idx) => (
                   <Link
                     key={idx}
-                    href={item.type === 'org' ? `/organizations/${item.data.org_id}` : `/offers/${item.data.offer_id}`}
-                    className="block px-4 py-2 hover:bg-blue-50 text-gray-800 text-sm cursor-pointer"
+                    href={
+                      item.type === 'org'
+                        ? `/organizations/${item.data.org_id}/offers`
+                        : item.type === 'category'
+                        ? `/categories/${item.data.id}`
+                        : `/offers/${item.data.offer_id}`
+                    }
+                    className={`block px-4 py-2 hover:bg-blue-50 text-gray-800 text-sm cursor-pointer ${item.type === 'category' ? 'font-semibold text-[#8529cd]' : ''}`}
                     onClick={() => setShowDropdown(false)}
                   >
                     {item.type === 'org' ? (
@@ -138,6 +158,11 @@ const Header = () => {
                             {item.data.categories.map(cat => cat.name_en || cat.name_mn).join(', ')}
                           ]</span>
                         )}
+                      </>
+                    ) : item.type === 'category' ? (
+                      <>
+                        <span className="font-medium">{item.data.name_mn || item.data.name_en}</span>
+                        <span className="ml-2 text-xs text-[#8529cd]">(Category)</span>
                       </>
                     ) : (
                       <>

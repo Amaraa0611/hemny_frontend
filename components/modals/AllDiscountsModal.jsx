@@ -21,7 +21,10 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        onClose();
+        // Only close AllDiscountsModal if details modal is NOT open
+        if (!isDetailsModalOpen) {
+          onClose();
+        }
       }
     };
 
@@ -32,7 +35,7 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isDetailsModalOpen]);
 
   // Get unique categories
   const categories = useMemo(() => {

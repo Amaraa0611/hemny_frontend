@@ -143,46 +143,37 @@ const CashbackDetailsModal = ({
                 {/* Offer Period */}
                 <div className="flex-1 bg-blue-50 p-4 rounded-xl">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">Урамшууллын хугацаа</h3>
-                  <div className="flex items-center space-x-2 text-blue-700">
+                  <div className="flex items-center space-x-2 text-blue-700 h-6">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <p className="text-sm sm:text-base font-medium">
+                    <p className="text-sm sm:text-base font-medium flex items-center h-6">
                       {formatDate(start_date)} - {formatDate(end_date)}
                     </p>
                   </div>
                 </div>
 
                 {/* Organization */}
-                {Organization && (
-                  <div className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">Байгууллага</h3>
-                    <div className="flex items-center space-x-3">
-                      <div className="relative">
-                        <img
-                          src={Organization?.Logos?.[0]?.url || '/images/default-logo.png'}
-                          alt={Organization.org_name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = '/images/default-logo.png';
-                          }}
-                        />
-                        <div className="absolute -bottom-1 -right-1 bg-green-500 rounded-full p-1">
-                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                      </div>
-                      <p className="text-base font-medium text-gray-900 tracking-tight">{Organization.org_name}</p>
-                    </div>
+                <div className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">Байгууллага</h3>
+                  <div className="flex items-center space-x-3 h-6">
+                    <img
+                      src={paymentOrg?.logo_url || '/images/default-logo.png'}
+                      alt={paymentOrg?.org_name || 'Payment Organization'}
+                      className="w-12 h-12 object-contain"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/images/default-logo.png';
+                      }}
+                    />
+                    <p className="text-base font-medium text-gray-900 tracking-tight flex items-center h-6">{paymentOrg?.org_name || '—'}</p>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Description */}
               <div>
-                <div className="bg-gray-50 p-4 rounded-xl text-gray-600 whitespace-pre-line font-medium">
+                <div className="bg-gray-50 pt-2 pb-4 px-4 rounded-xl text-gray-600 whitespace-pre-line font-medium">
                   {formatDescription(offer_description)}
                 </div>
               </div>

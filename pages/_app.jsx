@@ -6,7 +6,7 @@ import 'tailwindcss/tailwind.css';
 import Head from 'next/head';
 import MainLayout from '../components/layout/MainLayout';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function MyApp({ Component, pageProps }) {
   const [queryClient] = useState(() => new QueryClient({
@@ -17,6 +17,15 @@ function MyApp({ Component, pageProps }) {
       },
     },
   }));
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 22 || hour < 5) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, []);
 
   // If the page has its own layout, use that. Otherwise, use MainLayout.
   const getLayout = Component.getLayout || ((page) => <MainLayout>{page}</MainLayout>);

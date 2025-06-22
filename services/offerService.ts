@@ -1,5 +1,5 @@
 import { Offer, OfferType } from '../types/offer';
-import { BACKEND_URL } from './api';
+import { BACKEND_URL, axiosInstance } from './api';
 
 export const offerService = {
   getAll: async (): Promise<Offer[]> => {
@@ -122,6 +122,25 @@ export const offerService = {
     const response = await fetch(`${BACKEND_URL}/api/offers/loyalty/available`);
     if (!response.ok) {
       throw new Error('Failed to fetch available loyalty offers');
+    }
+    return response.json();
+  },
+
+  getByOrganization: async (orgId: number) => {
+    try {
+      const response = await axiosInstance.get(`/offers/organization/${orgId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching offers for organization:', error);
+      throw error;
+    }
+  },
+
+  // Fetch organizations with active offers by parent category
+  getOrganizationsByCategory: async (category_id: number) => {
+    const response = await fetch(`/api/offers/category/${category_id}/organizations`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch organizations by category');
     }
     return response.json();
   },
