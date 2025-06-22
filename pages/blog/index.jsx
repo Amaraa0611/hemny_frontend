@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import BlogCard from '../../components/blog/BlogCard';
+import BlogCard from '../../components/cards/BlogCard';
 import { blogApi } from '../../services/blogApi';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { getPosts } from '../../services/blogApi';

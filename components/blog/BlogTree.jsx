@@ -1,5 +1,5 @@
 import React from 'react';
-import BlogCard from './BlogCard';
+import BlogCard from '../cards/BlogCard';
 
 const BlogTree = ({ tags = [], posts = [] }) => {
   // Build a map of posts by tag

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Head from 'next/head';
 import { blogApi } from '../../services/blogApi';
-import BlogCard from '../../components/blog/BlogCard';
+import BlogCard from '../../components/cards/BlogCard';
 import { CalendarIcon, UserIcon, TagIcon, FolderIcon } from '@heroicons/react/24/outline';
 
 const BlogPost = () => {
