@@ -85,35 +85,35 @@ const BlogList = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {isFiltered ? (
           <main>
-            <div className="py-16 bg-white rounded-xl shadow-sm mb-12">
-              <div className="text-center">
+            <div className="py-8 sm:py-16 bg-white rounded-xl shadow-sm mb-8 sm:mb-12">
+              <div className="text-center px-4">
                 {activeTag && (
                   <>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
                       Posts tagged <span className="text-indigo-600">#{activeTag.name}</span>
                     </h1>
-                    {activeTag.description && <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-500">{activeTag.description}</p>}
+                    {activeTag.description && <p className="mt-4 sm:mt-6 max-w-3xl mx-auto text-lg sm:text-xl text-gray-500">{activeTag.description}</p>}
                   </>
                 )}
                 {activeCategory && (
                   <>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+                    <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
                       <span className="text-indigo-600">{activeCategory.name}</span>
                     </h1>
-                    {activeCategory.description && <p className="mt-6 max-w-3xl mx-auto text-xl text-gray-500">{activeCategory.description}</p>}
+                    {activeCategory.description && <p className="mt-4 sm:mt-6 max-w-3xl mx-auto text-lg sm:text-xl text-gray-500">{activeCategory.description}</p>}
                   </>
                 )}
               </div>
             </div>
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                 {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
                 {posts.map((post) => (
                   <BlogCard key={post.post_id} post={post} />
                 ))}
@@ -124,9 +124,9 @@ const BlogList = () => {
           <>
             {!isFiltered && (
               <>
-                <div className="text-center mb-12">
-                  <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">From the Blog</h1>
-                  <p className="mt-3 text-xl text-gray-500 sm:mt-4">Latest news, articles, and resources from our team.</p>
+                <div className="text-center mb-8 sm:mb-12 px-4">
+                  <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">From the Blog</h1>
+                  <p className="mt-3 text-lg sm:text-xl text-gray-500 sm:mt-4">Latest news, articles, and resources from our team.</p>
                 </div>
                 <BlogTree tags={tags} posts={posts} />
               </>

@@ -102,7 +102,7 @@ const BlogCard = ({ post, isFeatured = false, className = '', compact = false })
 
   return (
     <Link href={postLink} legacyBehavior>
-      <a className={`group flex flex-col bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full ${compact ? 'w-80' : ''} ${className}`}>
+      <a className={`group flex flex-col bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden h-full ${compact ? 'w-full sm:w-80' : ''} ${className}`}>
         <CardContent />
       </a>
     </Link>
