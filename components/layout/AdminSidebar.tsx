@@ -28,6 +28,31 @@ const AdminSidebar = () => {
         >
           Offers
         </Link>
+        <div className="pt-2">
+          <h2 className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+            Blog
+          </h2>
+          <div className="mt-2 space-y-1">
+            <Link 
+              href="/admin/blog" 
+              className={`block px-4 py-2 rounded hover:bg-gray-700 ${isActive('/admin/blog')}`}
+            >
+              Posts
+            </Link>
+            <Link 
+              href="/admin/blog/categories" 
+              className={`block px-4 py-2 rounded hover:bg-gray-700 ${isActive('/admin/blog/categories')}`}
+            >
+              Categories
+            </Link>
+            <Link 
+              href="/admin/blog/tags" 
+              className={`block px-4 py-2 rounded hover:bg-gray-700 ${isActive('/admin/blog/tags')}`}
+            >
+              Tags
+            </Link>
+          </div>
+        </div>
       </nav>
     </aside>
   );

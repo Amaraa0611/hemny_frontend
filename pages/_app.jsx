@@ -2,6 +2,7 @@
 import 'swiper/css';
 import 'swiper/css/navigation';
 import '../styles/globals.css';
+import 'tailwindcss/tailwind.css';
 import Head from 'next/head';
 import MainLayout from '../components/layout/MainLayout';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -16,6 +17,9 @@ function MyApp({ Component, pageProps }) {
       },
     },
   }));
+
+  // If the page has its own layout, use that. Otherwise, use MainLayout.
+  const getLayout = Component.getLayout || ((page) => <MainLayout>{page}</MainLayout>);
 
   return (
     <>
@@ -36,9 +40,7 @@ function MyApp({ Component, pageProps }) {
         />
       </Head>
       <QueryClientProvider client={queryClient}>
-        {/* <MainLayout> */}
-          <Component {...pageProps} />
-        {/* </MainLayout> */}
+        {getLayout(<Component {...pageProps} />)}
       </QueryClientProvider>
     </>
   );
