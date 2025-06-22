@@ -4,10 +4,6 @@ import { blogApi } from '../../services/blogApi';
 import AdminLayout from '../../components/layout/AdminLayout';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { generateBothSlugs } from '../../utils/slugUtils';
-import dynamic from 'next/dynamic';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
 
 const initialState = {
   title: '',
@@ -167,12 +163,7 @@ const BlogCreatePage = () => {
           </div>
           <div>
             <label className="block font-medium mb-1">Content *</label>
-            <ReactQuill
-              theme="snow"
-              value={form.content}
-              onChange={(content) => setForm(prev => ({ ...prev, content }))}
-              className="bg-white"
-            />
+            <textarea name="content" value={form.content} onChange={handleChange} rows={10} required className="w-full border rounded px-3 py-2" />
           </div>
           <div>
             <label className="block font-medium mb-1">Excerpt</label>
@@ -211,22 +202,24 @@ const BlogCreatePage = () => {
             </select>
           </div>
           {/* Meta fields (optional) */}
-          <details className="border rounded p-3">
-            <summary className="cursor-pointer font-medium">Meta & SEO Fields</summary>
-            <div className="mt-3 space-y-3">
-              <input name="meta_title" value={form.meta_title} onChange={handleChange} placeholder="Meta Title" className="w-full border rounded px-3 py-2" />
-              <input name="meta_description" value={form.meta_description} onChange={handleChange} placeholder="Meta Description" className="w-full border rounded px-3 py-2" />
-              <input name="meta_keywords" value={form.meta_keywords} onChange={handleChange} placeholder="Meta Keywords" className="w-full border rounded px-3 py-2" />
-              <input name="canonical_url" value={form.canonical_url} onChange={handleChange} placeholder="Canonical URL" className="w-full border rounded px-3 py-2" />
-              <input name="og_title" value={form.og_title} onChange={handleChange} placeholder="OG Title" className="w-full border rounded px-3 py-2" />
-              <input name="og_description" value={form.og_description} onChange={handleChange} placeholder="OG Description" className="w-full border rounded px-3 py-2" />
-              <input name="og_image" value={form.og_image} onChange={handleChange} placeholder="OG Image URL" className="w-full border rounded px-3 py-2" />
-              <input name="twitter_title" value={form.twitter_title} onChange={handleChange} placeholder="Twitter Title" className="w-full border rounded px-3 py-2" />
-              <input name="twitter_description" value={form.twitter_description} onChange={handleChange} placeholder="Twitter Description" className="w-full border rounded px-3 py-2" />
-              <input name="twitter_image" value={form.twitter_image} onChange={handleChange} placeholder="Twitter Image URL" className="w-full border rounded px-3 py-2" />
-              <textarea name="structured_data" value={form.structured_data} onChange={handleChange} placeholder="Structured Data (JSON)" className="w-full border rounded px-3 py-2" />
-            </div>
-          </details>
+          <div>
+            <details className="border rounded p-3">
+              <summary className="cursor-pointer font-medium">Meta & SEO Fields</summary>
+              <div className="mt-3 space-y-3">
+                <input name="meta_title" value={form.meta_title} onChange={handleChange} placeholder="Meta Title" className="w-full border rounded px-3 py-2" />
+                <input name="meta_description" value={form.meta_description} onChange={handleChange} placeholder="Meta Description" className="w-full border rounded px-3 py-2" />
+                <input name="meta_keywords" value={form.meta_keywords} onChange={handleChange} placeholder="Meta Keywords" className="w-full border rounded px-3 py-2" />
+                <input name="canonical_url" value={form.canonical_url} onChange={handleChange} placeholder="Canonical URL" className="w-full border rounded px-3 py-2" />
+                <input name="og_title" value={form.og_title} onChange={handleChange} placeholder="OG Title" className="w-full border rounded px-3 py-2" />
+                <input name="og_description" value={form.og_description} onChange={handleChange} placeholder="OG Description" className="w-full border rounded px-3 py-2" />
+                <input name="og_image" value={form.og_image} onChange={handleChange} placeholder="OG Image URL" className="w-full border rounded px-3 py-2" />
+                <input name="twitter_title" value={form.twitter_title} onChange={handleChange} placeholder="Twitter Title" className="w-full border rounded px-3 py-2" />
+                <input name="twitter_description" value={form.twitter_description} onChange={handleChange} placeholder="Twitter Description" className="w-full border rounded px-3 py-2" />
+                <input name="twitter_image" value={form.twitter_image} onChange={handleChange} placeholder="Twitter Image URL" className="w-full border rounded px-3 py-2" />
+                <textarea name="structured_data" value={form.structured_data} onChange={handleChange} placeholder="Structured Data (JSON)" className="w-full border rounded px-3 py-2" />
+              </div>
+            </details>
+          </div>
           <button type="submit" disabled={loading} className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50">
             {loading ? 'Creating...' : 'Create Post'}
           </button>

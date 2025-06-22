@@ -4,10 +4,6 @@ import { blogApi } from '../../../../services/blogApi';
 import AdminLayout from '../../../../components/layout/AdminLayout';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { generateBothSlugs } from '../../../../utils/slugUtils';
-import dynamic from 'next/dynamic';
-
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
 
 const initialState = {
   title: '',
@@ -226,12 +222,7 @@ const BlogEditPage = () => {
           </div>
           <div>
             <label className="block font-medium mb-1">Content *</label>
-            <ReactQuill
-              theme="snow"
-              value={form.content}
-              onChange={(content) => setForm(prev => ({ ...prev, content }))}
-              className="bg-white"
-            />
+            <textarea name="content" value={form.content} onChange={handleChange} rows={4} required className="w-full border rounded px-3 py-2" />
           </div>
           <div>
             <label className="block font-medium mb-1">Excerpt</label>
