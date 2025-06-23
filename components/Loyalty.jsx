@@ -1,6 +1,6 @@
 // components/Loyalty.jsx
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { colors } from '../utils/colors';
 import LoyaltyCard from './cards/LoyaltyCard';
@@ -31,15 +31,29 @@ const Loyalty = () => {
   const [current, setCurrent] = useState(0);
   const [slidesPerView, setSlidesPerView] = useState(getSlidesPerView());
   const [isHovered, setIsHovered] = useState(false);
+  const cardRef = useRef(null);
+  const [cardWidth, setCardWidth] = useState(0);
+  const [cardGap, setCardGap] = useState(0);
 
-  React.useEffect(() => {
+  // Measure card width and gap
+  useEffect(() => {
+    if (cardRef.current) {
+      const card = cardRef.current;
+      setCardWidth(card.offsetWidth);
+      // Get the gap between cards (margin-right)
+      const style = window.getComputedStyle(card);
+      setCardGap(parseInt(style.marginRight) || 0);
+    }
+  }, [slidesPerView, isLoading]);
+
+  useEffect(() => {
     const handleResize = () => setSlidesPerView(getSlidesPerView());
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Ensure current index is not out of bounds after resize
-  React.useEffect(() => {
+  useEffect(() => {
     const maxIndex = Math.max(0, safeStores.length - slidesPerView);
     if (current > maxIndex) {
       setCurrent(maxIndex);
@@ -50,16 +64,14 @@ const Loyalty = () => {
   const goPrev = () => setCurrent((prev) => Math.max(0, prev - 1));
   const goNext = () => setCurrent((prev) => Math.min(maxIndex, prev + 1));
 
-  // Helper to calculate correct translateX so last card is always fully visible
+  // Pixel-based translation for smooth movement
   const getTranslateX = () => {
     if (safeStores.length <= slidesPerView) return 0;
-    const maxIndex = Math.max(0, safeStores.length - slidesPerView);
-    const index = Math.min(current, maxIndex);
-    return -(index * (100 / slidesPerView));
+    return -(current * (cardWidth + cardGap));
   };
 
   // Autoplay effect
-  React.useEffect(() => {
+  useEffect(() => {
     if (isHovered) return;
     if (safeStores.length <= slidesPerView) return;
     const interval = setInterval(() => {
@@ -127,7 +139,7 @@ const Loyalty = () => {
           {current > 0 && (
             <button
               onClick={goPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+              className="absolute -left-8 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
               aria-label="Previous slide"
             >
               <svg className="w-6 h-6" fill="none" stroke="#004097" viewBox="0 0 24 24">
@@ -137,14 +149,15 @@ const Loyalty = () => {
           )}
           <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-out gap-8"
-              style={{ transform: `translateX(${getTranslateX()}%)` }}
+              className="flex transition-transform duration-500 ease-out"
+              style={{ transform: `translateX(${getTranslateX()}px)` }}
             >
               {safeStores.map((store, idx) => (
                 <div
                   key={store.offer_id}
-                  className="flex-none"
-                  style={{ width: `${100 / slidesPerView}%` }}
+                  ref={idx === 0 ? cardRef : null}
+                  className="flex-none mr-8"
+                  style={{ width: slidesPerView > 1 ? `calc((100% - ${(slidesPerView - 1) * 32}px) / ${slidesPerView})` : '100%' }}
                 >
                   <LoyaltyCard
                     image={store.picture_url}
@@ -164,7 +177,7 @@ const Loyalty = () => {
           {current < maxIndex && (
             <button
               onClick={goNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
+              className="absolute -right-8 top-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
               aria-label="Next slide"
             >
               <svg className="w-6 h-6" fill="none" stroke="#004097" viewBox="0 0 24 24">

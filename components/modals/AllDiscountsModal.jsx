@@ -39,23 +39,22 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
 
   // Get unique categories
   const categories = useMemo(() => {
-    const uniqueCategories = new Set(stores?.map(store => store.Organization?.category) || []);
+    const uniqueCategories = new Set(
+      stores?.map(store => store.Organization?.categories?.[0]?.name_mn) || []
+    );
     return ['all', ...Array.from(uniqueCategories).filter(Boolean)];
   }, [stores]);
 
   // Filter stores based on search and category
   const filteredStores = useMemo(() => {
     if (!stores) return [];
-    
     return stores.filter(store => {
       const matchesSearch = searchQuery === '' || 
         store.Organization?.org_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         store.DiscountOffer?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         store.DiscountOffer?.discount_value?.toString().includes(searchQuery);
-      
-      const matchesCategory = selectedCategory === 'all' || 
-        store.Organization?.category === selectedCategory;
-
+      const orgCategory = store.Organization?.categories?.[0]?.name_mn;
+      const matchesCategory = selectedCategory === 'all' || orgCategory === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [stores, searchQuery, selectedCategory]);
@@ -64,7 +63,7 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
   const groupedStores = useMemo(() => {
     const groups = {};
     filteredStores.forEach(store => {
-      const category = store.Organization?.category || 'Uncategorized';
+      const category = store.Organization?.categories?.[0]?.name_mn || 'Uncategorized';
       if (!groups[category]) {
         groups[category] = [];
       }

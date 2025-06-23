@@ -38,10 +38,13 @@ const Discount = () => {
   console.log('Loading state:', isLoading);
   console.log('Error state:', error);
 
+  // Number of cards per page
+  const CARDS_PER_PAGE = 8;
+
   const handleNext = () => {
-    if (currentIndex < (stores?.length ?? 0) - 8 && !isAnimating) {
+    if (currentIndex + CARDS_PER_PAGE < (stores?.length ?? 0) && !isAnimating) {
       setIsAnimating(true);
-      setCurrentIndex(prev => prev + 2);
+      setCurrentIndex(prev => prev + CARDS_PER_PAGE);
       setTimeout(() => setIsAnimating(false), 300);
     }
   };
@@ -49,7 +52,7 @@ const Discount = () => {
   const handlePrev = () => {
     if (currentIndex > 0 && !isAnimating) {
       setIsAnimating(true);
-      setCurrentIndex(prev => prev - 2);
+      setCurrentIndex(prev => Math.max(0, prev - CARDS_PER_PAGE));
       setTimeout(() => setIsAnimating(false), 300);
     }
   };
@@ -116,10 +119,10 @@ const Discount = () => {
   }
 
   // Calculate visible stores
-  const visibleStores = stores?.slice(currentIndex, currentIndex + 8) || [];
-  const hasMoreStores = (stores?.length ?? 0) > 8;
+  const visibleStores = stores?.slice(currentIndex, currentIndex + CARDS_PER_PAGE) || [];
+  const hasMoreStores = (stores?.length ?? 0) > CARDS_PER_PAGE;
   const canGoPrev = currentIndex > 0;
-  const canGoNext = currentIndex < (stores?.length ?? 0) - 8;
+  const canGoNext = currentIndex + CARDS_PER_PAGE < (stores?.length ?? 0);
 
   return (
     <section className="py-12 bg-gray-50">
