@@ -111,6 +111,20 @@ const BlogPost = () => {
       <Head>
         <title>{post.title} | Hemny Blog</title>
         <meta name="description" content={post.excerpt} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={`https://hemny.mn/blog/${post.slug}`} />
+        <meta property="og:title" content={post.title} />
+        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:image" content={imageUrl} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={`https://hemny.mn/blog/${post.slug}`} />
+        <meta name="twitter:title" content={post.title} />
+        <meta name="twitter:description" content={post.excerpt} />
+        <meta name="twitter:image" content={imageUrl} />
       </Head>
       <div className="bg-white">
         {/* Hero Section */}
