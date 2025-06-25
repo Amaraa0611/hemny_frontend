@@ -205,6 +205,9 @@ const BlogEditPage = () => {
           <div>
             <label className="block font-medium mb-1">Slug *</label>
             <input name="slug" value={form.slug} onChange={handleChange} required className="w-full border rounded px-3 py-2" />
+            <div className="mt-1 text-xs text-gray-500">
+              Slug should be 2–5 main keywords in Mongolian, separated by hyphens. Example: <span className="font-mono">мөнгө-хэмнэх-сэтгэлгээ</span>
+            </div>
             {form.title && (
               <div className="mt-2 text-sm text-gray-600">
                 <div className="flex flex-wrap gap-4">
