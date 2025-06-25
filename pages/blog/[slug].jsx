@@ -98,12 +98,14 @@ const BlogPost = () => {
     if (post.featured_image.startsWith('http://') || post.featured_image.startsWith('https://')) {
       imageUrl = post.featured_image;
     } else if (post.featured_image.startsWith('/')) {
-      imageUrl = post.featured_image;
+      imageUrl = `https://hemny.mn${post.featured_image}`;
     } else {
       // If it's a relative path, construct the full URL
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
-      imageUrl = apiUrl ? `${apiUrl}${post.featured_image}` : post.featured_image;
+      imageUrl = apiUrl ? `${apiUrl}${post.featured_image}` : `https://hemny.mn/${post.featured_image}`;
     }
+  } else {
+    imageUrl = 'https://hemny.mn/images/default-blog.jpg';
   }
 
   return (
