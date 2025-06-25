@@ -93,7 +93,7 @@ const BlogPost = () => {
   const publishedAt = post.published_at ? new Date(post.published_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
 
   // Construct image URL with proper fallback
-  let imageUrl = '/images/default-blog.jpg';
+  let imageUrl = '';
   if (post.featured_image) {
     if (post.featured_image.startsWith('http://') || post.featured_image.startsWith('https://')) {
       imageUrl = post.featured_image;
@@ -105,7 +105,7 @@ const BlogPost = () => {
       imageUrl = apiUrl ? `${apiUrl}${post.featured_image}` : `https://hemny.mn/${post.featured_image}`;
     }
   } else {
-    imageUrl = 'https://hemny.mn/images/default-blog.jpg';
+    imageUrl = 'https://hemny.mn/images/logo/Hemny_logo.png';
   }
 
   return (
