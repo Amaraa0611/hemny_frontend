@@ -10,6 +10,7 @@
               <ul className="space-y-1.5">
                 <li><a href="/" className="text-gray-300 hover:text-white transition-colors text-sm">Home</a></li>
                 <li><a href="/blog" className="text-gray-300 hover:text-white transition-colors text-sm">Blog</a></li>
+                <li><a href="/privacy-policy" className="text-gray-300 hover:text-white transition-colors text-sm">Privacy Policy</a></li>
               </ul>
             </div>
 
