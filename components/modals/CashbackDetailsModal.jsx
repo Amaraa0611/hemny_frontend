@@ -155,7 +155,7 @@ const CashbackDetailsModal = ({
 
                 {/* Organization */}
                 <div className="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">Байгууллага</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 tracking-tight">Cashback олгох байгууллага</h3>
                   <div className="flex items-center space-x-3 h-6">
                     <img
                       src={paymentOrg?.logo_url || '/images/default-logo.png'}

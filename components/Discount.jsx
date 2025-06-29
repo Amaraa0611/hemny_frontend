@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import DiscountCard from './cards/DiscountCard';
 import { discountApi } from '../services/api';
+import { organizationService } from '../services/organizationService';
 import AllDiscountsModal from './modals/AllDiscountsModal';
 import DiscountDetailsModal from './modals/DiscountDetailsModal';
 
@@ -23,8 +24,8 @@ const Discount = () => {
 
   const { 
     data: stores, 
-    isLoading, 
-    error 
+    isLoading: storesLoading, 
+    error: storesError 
   } = useQuery({
     queryKey: ['discount-stores'],
     queryFn: () => discountApi.getStores(),
@@ -34,15 +35,60 @@ const Discount = () => {
     }
   });
 
+  const {
+    data: organizations,
+    isLoading: orgsLoading,
+    error: orgsError
+  } = useQuery({
+    queryKey: ['organizations'],
+    queryFn: () => organizationService.getAll(),
+    retry: 1,
+    onError: (error) => {
+      console.error('Organizations query error:', error);
+    }
+  });
+
+  // Merge stores with organization categories
+  const storesWithCategories = React.useMemo(() => {
+    if (!stores || !organizations) return stores;
+    
+    return stores.map(store => {
+      const org = organizations.find(org => org.org_id === store.Organization?.org_id);
+      return {
+        ...store,
+        Organization: {
+          ...store.Organization,
+          categories: org?.categories || []
+        }
+      };
+    });
+  }, [stores, organizations]);
+
   console.log('Stores data:', stores);
-  console.log('Loading state:', isLoading);
-  console.log('Error state:', error);
+  console.log('Organizations data:', organizations);
+  console.log('Stores with categories:', storesWithCategories);
+  console.log('Loading state:', storesLoading || orgsLoading);
+  console.log('Error state:', storesError || orgsError);
+  
+  // Debug first store structure if available
+  if (storesWithCategories && storesWithCategories.length > 0) {
+    console.log('First store structure:', storesWithCategories[0]);
+    console.log('First store keys:', Object.keys(storesWithCategories[0]));
+    if (storesWithCategories[0].Organization) {
+      console.log('Organization keys:', Object.keys(storesWithCategories[0].Organization));
+      console.log('Organization categories:', storesWithCategories[0].Organization.categories);
+    }
+    if (storesWithCategories[0].organization) {
+      console.log('organization keys:', Object.keys(storesWithCategories[0].organization));
+      console.log('organization categories:', storesWithCategories[0].organization.categories);
+    }
+  }
 
   // Number of cards per page
   const CARDS_PER_PAGE = 8;
 
   const handleNext = () => {
-    if (currentIndex + CARDS_PER_PAGE < (stores?.length ?? 0) && !isAnimating) {
+    if (currentIndex + CARDS_PER_PAGE < (storesWithCategories?.length ?? 0) && !isAnimating) {
       setIsAnimating(true);
       setCurrentIndex(prev => prev + CARDS_PER_PAGE);
       setTimeout(() => setIsAnimating(false), 300);
@@ -68,7 +114,7 @@ const Discount = () => {
   };
 
   // Show loading state
-  if (isLoading) {
+  if (storesLoading || orgsLoading) {
     return (
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -101,7 +147,7 @@ const Discount = () => {
   }
 
   // Show error state
-  if (error) {
+  if (storesError || orgsError) {
     return (
       <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
@@ -119,10 +165,10 @@ const Discount = () => {
   }
 
   // Calculate visible stores
-  const visibleStores = stores?.slice(currentIndex, currentIndex + CARDS_PER_PAGE) || [];
-  const hasMoreStores = (stores?.length ?? 0) > CARDS_PER_PAGE;
+  const visibleStores = storesWithCategories?.slice(currentIndex, currentIndex + CARDS_PER_PAGE) || [];
+  const hasMoreStores = (storesWithCategories?.length ?? 0) > CARDS_PER_PAGE;
   const canGoPrev = currentIndex > 0;
-  const canGoNext = currentIndex + CARDS_PER_PAGE < (stores?.length ?? 0);
+  const canGoNext = currentIndex + CARDS_PER_PAGE < (storesWithCategories?.length ?? 0);
 
   return (
     <section className="py-12 bg-gray-50">
@@ -213,7 +259,7 @@ const Discount = () => {
       <AllDiscountsModal
         isOpen={isAllModalOpen}
         onClose={() => setIsAllModalOpen(false)}
-        stores={stores}
+        stores={storesWithCategories}
       />
 
       {selectedStore && (

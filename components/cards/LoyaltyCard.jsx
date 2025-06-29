@@ -12,7 +12,7 @@ const LoyaltyCard = ({
   source_link
 }) => {
   // Debug log to see what props we're receiving
-  console.log('LoyaltyCard props:', { image, title, description, link, organization, loyaltyDetails, startDate, endDate });
+  // console.log('LoyaltyCard props:', { image, title, description, link, organization, loyaltyDetails, startDate, endDate });
 
   // Helper function to fix image path
   const getImagePath = (path) => {

@@ -39,10 +39,31 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
 
   // Get unique categories
   const categories = useMemo(() => {
+    console.log('Stores data in AllDiscountsModal:', stores);
+    
+    if (stores && stores.length > 0) {
+      console.log('First store in modal:', stores[0]);
+      console.log('First store keys:', Object.keys(stores[0]));
+    }
+    
     const uniqueCategories = new Set(
-      stores?.map(store => store.Organization?.categories?.[0]?.name_mn) || []
+      stores?.map(store => {
+        // Log the actual structure
+        console.log('Store being processed:', store);
+        console.log('Store keys:', Object.keys(store));
+        
+        // Now categories should be in Organization.categories
+        const category = store.Organization?.categories?.[0]?.name_mn;
+        
+        console.log('Category from Organization.categories:', category);
+        console.log('Organization categories array:', store.Organization?.categories);
+        
+        return category;
+      }) || []
     );
-    return ['all', ...Array.from(uniqueCategories).filter(Boolean)];
+    const filteredCategories = Array.from(uniqueCategories).filter(Boolean);
+    console.log('Unique categories found:', filteredCategories);
+    return ['all', ...filteredCategories];
   }, [stores]);
 
   // Filter stores based on search and category
@@ -53,6 +74,7 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
         store.Organization?.org_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         store.DiscountOffer?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         store.DiscountOffer?.discount_value?.toString().includes(searchQuery);
+      
       const orgCategory = store.Organization?.categories?.[0]?.name_mn;
       const matchesCategory = selectedCategory === 'all' || orgCategory === selectedCategory;
       return matchesSearch && matchesCategory;
@@ -64,11 +86,13 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
     const groups = {};
     filteredStores.forEach(store => {
       const category = store.Organization?.categories?.[0]?.name_mn || 'Uncategorized';
+      console.log('Grouping store:', store.Organization?.org_name, 'into category:', category);
       if (!groups[category]) {
         groups[category] = [];
       }
       groups[category].push(store);
     });
+    console.log('Final grouped stores:', groups);
     return groups;
   }, [filteredStores]);
 

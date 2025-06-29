@@ -7,10 +7,18 @@ export const discountApi = {
       console.log('Fetching discount stores...'); // Debug log
       const response = await axiosInstance.get('offers/discount/available');
       console.log('Response:', response); // Debug log
+      console.log('Response data:', response.data); // Debug log
       
       if (!response.data) {
         throw new Error('No data received from server');
       }
+      
+      // Debug first item structure if available
+      if (response.data && response.data.length > 0) {
+        console.log('First item in response:', response.data[0]);
+        console.log('First item keys:', Object.keys(response.data[0]));
+      }
+      
       return response.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
