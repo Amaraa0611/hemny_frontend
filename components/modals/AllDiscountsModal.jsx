@@ -7,6 +7,7 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedStore, setSelectedStore] = useState(null);
+  const [viewMode, setViewMode] = useState('categories'); // 'categories' or 'stacked'
   const modalRef = useRef(null);
 
   // Reset states when modal closes
@@ -81,7 +82,7 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
     });
   }, [stores, searchQuery, selectedCategory]);
 
-  // Group stores by category
+  // Group stores by category and sort by count
   const groupedStores = useMemo(() => {
     const groups = {};
     filteredStores.forEach(store => {
@@ -92,8 +93,17 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
       }
       groups[category].push(store);
     });
-    console.log('Final grouped stores:', groups);
-    return groups;
+    
+    // Sort categories by number of discounts (most first)
+    const sortedGroups = Object.entries(groups)
+      .sort(([, a], [, b]) => b.length - a.length)
+      .reduce((acc, [category, stores]) => {
+        acc[category] = stores;
+        return acc;
+      }, {});
+    
+    console.log('Final grouped stores (sorted):', sortedGroups);
+    return sortedGroups;
   }, [filteredStores]);
 
   const handleOpenDetails = (store) => {
@@ -136,7 +146,7 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
               </div>
 
               {/* Search and Filter */}
-              <div className="mb-6 flex flex-col sm:flex-row gap-4">
+              <div className="mb-6 flex flex-col sm:flex-row gap-4 flex-shrink-0">
                 <div className="flex-1">
                   <input
                     type="text"
@@ -159,17 +169,82 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
                     ))}
                   </select>
                 </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative inline-flex bg-gray-100 rounded-lg p-1 shadow-inner">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('categories')}
+                      className={`relative px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ease-in-out ${
+                        viewMode === 'categories'
+                          ? 'text-blue-600 bg-white shadow-sm'
+                          : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                        </svg>
+                        Categories
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('stacked')}
+                      className={`relative px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ease-in-out ${
+                        viewMode === 'stacked'
+                          ? 'text-blue-600 bg-white shadow-sm'
+                          : 'text-gray-600 hover:text-gray-800'
+                      }`}
+                    >
+                      <span className="flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                        Stacked
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
 
-              {/* Discounts Grid */}
-              <div className="space-y-8">
-                {Object.entries(groupedStores).map(([category, stores]) => (
-                  <div key={category}>
-                    <h4 className="text-xl font-semibold text-gray-900 mb-4">
-                      {category}
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                      {stores.map(store => (
+              {/* Discounts Grid - Scrollable Content */}
+              <div className="flex-1 overflow-y-auto space-y-8">
+                {viewMode === 'categories' ? (
+                  // Category View
+                  Object.entries(groupedStores).map(([category, stores]) => (
+                    <div key={category} className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-xl font-semibold text-gray-900">
+                          {category}
+                        </h4>
+                        <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                          {stores.length} {stores.length === 1 ? 'offer' : 'offers'}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                        {stores.map(store => (
+                          <DiscountCard
+                            key={store.offer_id}
+                            {...store}
+                            onOpenDetails={() => handleOpenDetails(store)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  // Stacked View
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xl font-semibold text-gray-900">
+                        All Discounts
+                      </h4>
+                      <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                        {filteredStores.length} {filteredStores.length === 1 ? 'offer' : 'offers'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                      {filteredStores.map(store => (
                         <DiscountCard
                           key={store.offer_id}
                           {...store}
@@ -178,7 +253,13 @@ const AllDiscountsModal = ({ isOpen, onClose, stores }) => {
                       ))}
                     </div>
                   </div>
-                ))}
+                )}
+                
+                {Object.keys(groupedStores).length === 0 && (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">No discounts found matching your criteria.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

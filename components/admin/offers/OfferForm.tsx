@@ -23,7 +23,7 @@ interface FormData {
   is_active: boolean;
   is_featured: boolean;
   picture_url: string;
-  payment_org: number;
+  payment_org: number | null;
   payment_option: string;
   payment_option_2: string;
   source_link: string;
@@ -48,7 +48,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
     is_active: offer?.is_active || false,
     is_featured: offer?.is_featured || false,
     picture_url: offer?.picture_url || '',
-    payment_org: offer?.payment_org || 0,
+    payment_org: offer?.payment_org || null,
     payment_option: offer?.payment_option || '',
     payment_option_2: offer?.payment_option_2 || '',
     source_link: offer?.source_link || '',
@@ -236,7 +236,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
         is_active: formData.is_active,
         is_featured: formData.is_featured,
         picture_url: formData.picture_url,
-        payment_org: Number(formData.payment_org),
+        payment_org: formData.payment_org,
         payment_option: formData.payment_option,
         payment_option_2: formData.payment_option_2,
         source_link: formData.source_link,
@@ -443,14 +443,13 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
           </div>
 
           <div className="mb-4">
-            <label className="block mb-1">Payment Organization</label>
+            <label className="block mb-1">Payment Organization (Optional)</label>
             <select
-              value={formData.payment_org}
-              onChange={e => setFormData({ ...formData, payment_org: Number(e.target.value) })}
+              value={formData.payment_org || ''}
+              onChange={e => setFormData({ ...formData, payment_org: e.target.value === '' ? null : Number(e.target.value) })}
               className="w-full border rounded px-3 py-2"
-              required
             >
-              <option value="">Select Payment Organization</option>
+              <option value="">Select Payment Organization (Optional)</option>
               {financeOrganizations.map((org) => (
                 <option key={org.org_id} value={org.org_id}>
                   {org.org_name}
@@ -458,7 +457,7 @@ const OfferForm: React.FC<OfferFormProps> = ({ offer, offerType, onClose, onSubm
               ))}
             </select>
             <p className="text-sm text-gray-500 mt-1">
-              Select a finance organization that will process the cashback payment
+              Select a finance organization that will process the cashback payment (optional for discount offers)
             </p>
           </div>
 

@@ -16,7 +16,7 @@ export interface BaseOffer {
   is_active: boolean;
   is_featured: boolean;
   picture_url: string;
-  payment_org: PaymentOrg;
+  payment_org: PaymentOrg | null;
   payment_option: string;
   payment_option_2?: string;
   terms_conditions: string;
@@ -70,7 +70,7 @@ export interface Offer {
   is_active: boolean;
   is_featured: boolean;
   picture_url: string;
-  payment_org: number;
+  payment_org: number | null;
   payment_option: string;
   payment_option_2: string;
   source_link: string | null;
