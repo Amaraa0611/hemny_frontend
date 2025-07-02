@@ -152,8 +152,8 @@ const OrganizationsPage: React.FC = () => {
                 {category}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {groupedOrganizations[category].map((organization) => (
-                  <div key={organization.org_id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+                {[...new Map(groupedOrganizations[category].map(org => [org.org_id, org])).values()].map((organization) => (
+                  <div key={organization.org_id + '-' + organization.org_name} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">{organization.org_name}</h3>
                       <div className="flex space-x-1">
@@ -194,8 +194,8 @@ const OrganizationsPage: React.FC = () => {
       ) : (
         // Show filtered organizations
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredOrganizations.map((organization) => (
-            <div key={organization.org_id} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
+          {[...new Map(filteredOrganizations.map(org => [org.org_id, org])).values()].map((organization) => (
+            <div key={organization.org_id + '-' + organization.org_name} className="bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-start mb-3">
                 <h2 className="text-lg font-semibold text-gray-900 line-clamp-2">{organization.org_name}</h2>
                 <div className="flex space-x-1">
