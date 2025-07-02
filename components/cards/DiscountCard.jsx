@@ -33,7 +33,12 @@ const DiscountCard = ({ onOpenDetails, ...props }) => {
 
   const getDiscountText = (value) => {
     if (!value) return '';
-    return `${value}% Discount`;
+    // Show % only if value is a number or a range (e.g., 10 or 10-50)
+    if (/^\d+(\.\d+)?(-\d+(\.\d+)?)?$/.test(value.trim())) {
+      return `${value}% хямдрал`;
+    }
+    // Otherwise, just show the value and 'хямдрал'
+    return `${value} хямдрал`;
   };
 
   // Truncate description if it's too long
@@ -48,11 +53,11 @@ const DiscountCard = ({ onOpenDetails, ...props }) => {
       onClick={onOpenDetails}
       className="bg-white rounded-xl shadow-md flex items-center p-4 sm:p-5 gap-4 sm:gap-6 w-full hover:shadow-lg transition-all cursor-pointer active:scale-[0.99] active:shadow-sm h-[88px]"
     >
-      <div className="flex-shrink-0 flex items-center justify-center h-14 w-20 sm:h-16 sm:w-24">
+      <div className="flex-shrink-0 flex items-center justify-center h-14 w-14 sm:h-16 sm:w-16 rounded-full bg-gray-100 overflow-hidden p-1">
         <img 
           src={getLogo()}
           alt={props.Organization?.org_name}
-          className="h-full w-full object-contain"
+          className="h-full w-full object-contain rounded-full"
           loading="lazy"
           onError={(e) => {
             console.error(`Failed to load logo: ${getLogo()}`);
