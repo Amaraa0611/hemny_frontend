@@ -34,6 +34,8 @@ const OrganizationsPage: React.FC = () => {
   const searchedOrganizations = organizations.filter(org =>
     org.org_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  console.log('Search Query:', searchQuery);
+  console.log('Searched Organizations:', searchedOrganizations.map(o => o.org_name));
 
   // Group the searched organizations by category
   const groupedOrganizations = searchedOrganizations.reduce((acc, org) => {
@@ -53,12 +55,15 @@ const OrganizationsPage: React.FC = () => {
     }
     return acc;
   }, {} as Record<string, Organization[]>);
+  console.log('Grouped Organizations:', groupedOrganizations);
 
   // Get all unique categories from the searched results
   const categories = Object.keys(groupedOrganizations).sort();
 
   // Filter organizations for the grid view when a specific category is selected
   const filteredOrganizations = groupedOrganizations[selectedCategory] || [];
+  console.log('Selected Category:', selectedCategory);
+  console.log('Filtered Organizations:', filteredOrganizations.map(o => o.org_name));
 
   const handleEdit = (organization: Organization) => {
     setSelectedOrganization(organization);
