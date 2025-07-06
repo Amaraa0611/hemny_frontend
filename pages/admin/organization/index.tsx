@@ -22,6 +22,15 @@ const emptyForm: CategoryForm = {
   parent_id: null,
 };
 
+// Helper to extract error message without using 'any'
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'object' && err && 'message' in err && typeof (err as { message: unknown }).message === 'string') {
+    return (err as { message: string }).message;
+  }
+  return 'An unknown error occurred';
+}
+
 const OrganizationAdminPage = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,8 +102,8 @@ const OrganizationAdminPage = () => {
       setTimeout(() => {
         closeModal();
       }, 800);
-    } catch (err: any) {
-      setError(err?.message || 'Failed to save category');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to save category');
     } finally {
       setActionLoading(false);
     }
@@ -110,8 +119,8 @@ const OrganizationAdminPage = () => {
       await categoryService.deleteCategory(cat.id);
       setSuccessMsg('Category deleted successfully!');
       fetchCategories();
-    } catch (err: any) {
-      setError(err?.message || 'Failed to delete category');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || 'Failed to delete category');
     } finally {
       setActionLoading(false);
     }
