@@ -14,6 +14,7 @@ const OffersPage: React.FC = () => {
   const [selectedOffer, setSelectedOffer] = useState<Offer | undefined>(undefined);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [offerToDelete, setOfferToDelete] = useState<Offer | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch organizations
   const { data: organizations = [], isLoading: orgsLoading } = useQuery({
@@ -41,6 +42,16 @@ const OffersPage: React.FC = () => {
       ...offer,
       organization: organizations.find((org: Organization) => org.org_id === offer.org_id)
     }));
+
+  // Filter offers by search query (title, description, or organization name)
+  const filteredOffers = offers.filter(offer => {
+    const q = searchQuery.toLowerCase();
+    return (
+      offer.offer_title.toLowerCase().includes(q) ||
+      (offer.offer_description && offer.offer_description.toLowerCase().includes(q)) ||
+      (offer.organization?.org_name && offer.organization.org_name.toLowerCase().includes(q))
+    );
+  });
 
   const handleDeleteClick = (offer: Offer) => {
     setOfferToDelete(offer);
@@ -86,6 +97,17 @@ const OffersPage: React.FC = () => {
           </button>
         </div>
 
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search by offer title, description, or organization..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
         <div className="mb-6">
           <div className="flex space-x-4">
             {(['DISCOUNT', 'CASHBACK', 'LOYALTY'] as OfferType[]).map((type) => (
@@ -114,13 +136,13 @@ const OffersPage: React.FC = () => {
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
-        ) : offers.length === 0 ? (
+        ) : filteredOffers.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             No {selectedType.toLowerCase()} offers found
           </div>
         ) : (
           <div className="grid gap-6">
-            {offers.map((offer: Offer) => (
+            {filteredOffers.map((offer: Offer) => (
               <div key={offer.offer_id} className="bg-white rounded-lg shadow p-6">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
