@@ -16,4 +16,6 @@ const AdminOrganizationsPage: NextPage = () => {
   );
 };
 
+// Organization category edit page should be placed at /admin/organizations/[id]/categories.tsx
+
 export default AdminOrganizationsPage;

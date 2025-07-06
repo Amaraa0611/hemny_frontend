@@ -7,6 +7,46 @@ import LoyaltyCard from '../../components/cards/LoyaltyCard';
 import CashbackDetailsModal from '../../components/modals/CashbackDetailsModal';
 import DiscountDetailsModal from '../../components/modals/DiscountDetailsModal';
 
+// Helper function to get the appropriate logo and convert to proper display path
+const getLogo = (organization, offerType = null) => {
+  // If organization has Logos array, use that (like in card components)
+  if (organization?.Logos && organization.Logos.length > 0) {
+    const logoUrl = organization.Logos[0].url;
+    if (logoUrl.includes('/images/')) {
+      const pathAfterImages = logoUrl.split('/images/').pop();
+      return `/images/${pathAfterImages}`;
+    }
+    return logoUrl;
+  }
+  
+  // If organization has logo_url directly, use that
+  if (organization?.logo_url) {
+    if (organization.logo_url.includes('/images/')) {
+      const pathAfterImages = organization.logo_url.split('/images/').pop();
+      return `/images/${pathAfterImages}`;
+    }
+    return organization.logo_url;
+  }
+  
+  // Default fallback
+  return '/images/default-logo.png';
+};
+
+// Helper function to get the appropriate offer-specific logo
+const getOfferLogo = (organization, offerType) => {
+  if (!organization?.org_name) return '/images/default-logo.png';
+  
+  // Convert organization name to lowercase and replace spaces with underscores
+  const orgName = organization.org_name.toLowerCase().replace(/\s+/g, '_');
+  
+  // Try to find the specific offer logo
+  const offerLogoPath = `/images/logo/merchant_logo/${orgName}_${offerType.toLowerCase()}.webp`;
+  
+  // For now, return the offer-specific logo path
+  // The card components will handle the fallback if the image doesn't exist
+  return offerLogoPath;
+};
+
 const OFFER_TYPES = [
   { key: 'CASHBACK', label: 'Cashback', color: 'text-green-700' },
   { key: 'DISCOUNT', label: 'Discount', color: 'text-red-700' },
@@ -53,7 +93,7 @@ export default function CategoryOrganizationsPage() {
   ) || 0;
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
+    <div className="max-w-4xl mx-auto py-10 px-4 pb-16">
       {loading ? (
         <div className="text-center text-lg">Loading...</div>
       ) : error ? (
@@ -85,7 +125,15 @@ export default function CategoryOrganizationsPage() {
               {data.organizations.map(({ organization, offers }, orgIdx) => (
                 <div key={organization.org_id}>
                   <div className="flex items-center gap-4 mb-2">
-                    <img src={organization.logo_url} alt={organization.org_name} className="w-12 h-12 object-contain" />
+                    <img 
+                      src={getLogo(organization)} 
+                      alt={organization.org_name} 
+                      className="w-12 h-12 object-contain" 
+                      onError={(e) => {
+                        console.error(`Failed to load logo: ${getLogo(organization)}`);
+                        e.target.src = '/images/default-logo.png';
+                      }}
+                    />
                     <span className="text-xl font-bold" style={{ color: organization.brand_colors }}>{organization.org_name}</span>
                   </div>
                   {/* Offers grouped by type, with clear headers and spacing */}
@@ -125,8 +173,20 @@ export default function CategoryOrganizationsPage() {
 }
 
 function OfferCard({ offer, org, onOpenDetails }) {
-  // Attach org as Organization prop for modal compatibility
-  const offerWithOrg = { ...offer, Organization: org };
+  // Format organization data to match what card components expect
+  const formattedOrg = {
+    ...org,
+    // Ensure Logos array exists for card components with offer-specific logos
+    Logos: org.Logos || [{
+      url: offer.offer_type === 'CASHBACK' ? getOfferLogo(org, 'cashback') :
+           offer.offer_type === 'DISCOUNT' ? getOfferLogo(org, 'discount') :
+           getLogo(org)
+    }]
+  };
+  
+  // Attach formatted org as Organization prop for modal compatibility
+  const offerWithOrg = { ...offer, Organization: formattedOrg };
+  
   if (offer.offer_type === 'CASHBACK' && offer.CashbackOffer) {
     return <CashbackCard {...offerWithOrg} onOpenDetails={() => onOpenDetails(offerWithOrg, 'cashback')} />;
   }
@@ -138,7 +198,7 @@ function OfferCard({ offer, org, onOpenDetails }) {
       image={offer.picture_url}
       title={offer.offer_title}
       description={offer.offer_description}
-      organization={org}
+      organization={formattedOrg}
       loyaltyDetails={offer.LoyaltyOffer}
       startDate={offer.start_date}
       endDate={offer.end_date}
